@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Merge Sports Balls</title>
+  <style>
+    html, body { 
+      height: 100%; 
+      margin: 0; 
+      padding: 0; 
+      background: #17331d; 
+      font-family: system-ui, -apple-system, sans-serif; 
+      touch-action: manipulation;
+    }
+    body { 
+      display: flex; 
+      flex-direction: column; 
+    }
+
+    /* Header */
+    .hud { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      height: 60px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      padding: 8px 12px; 
+      box-sizing: border-box; 
+      z-index: 10; 
+      background: rgba(10, 40, 20, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .score { 
+      font-weight: 800; 
+      font-size: 20px; 
+      color: #9eff79; 
+      letter-spacing: 1px; 
+      text-shadow: 0 0 6px rgba(158, 255, 121, 0.4);
+    }
+    .next { 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+      color: #d9ffd0; 
+      font-size: 13px; 
+    }
+    .next canvas { 
+      width: 36px; 
+      height: 36px; 
+      image-rendering: pixelated; 
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+    }
+    .btn { 
+      width: 40px; 
+      height: 40px; 
+      display: grid; 
+      place-items: center; 
+      border-radius: 50%; 
+      background: rgba(255, 255, 255, 0.1); 
+      border: none; 
+      color: white; 
+      cursor: pointer; 
+      margin-left: 8px;
+    }
+    .btn:hover { 
+      background: rgba(255, 255, 255, 0.2); 
+    }
+
+    /* Game canvas wrapper */
+    #wrap { 
+      position: relative; 
+      flex: 1; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      padding: 60px 10px 10px;
+      overflow: hidden;
+    }
+    #game { 
+      width: 100%; 
+      max-width: 480px; 
+      height: 720px; 
+      max-height: calc(100vh - 80px); 
+      background: #2a6f38; 
+      border-radius: 12px; 
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Overlay */
+    .center { 
+      position: absolute; 
+      inset: 0; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      pointer-events: none; 
+    }
+    .overlay { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 16px; 
+      color: white; 
+      text-align: center; 
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.7);
+      max-width: 80%;
+    }
+    .title { 
+      font-size: 24px; 
+      font-weight: 900; 
+      color: #ff6b6b;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .restart { 
+      pointer-events: auto; 
+      padding: 14px 24px; 
+      border-radius: 12px; 
+      border: none; 
+      font-weight: 700; 
+      font-size: 16px; 
+      cursor: pointer; 
+      background: #ff2d2d; 
+      color: white; 
+      box-shadow: 0 4px 12px rgba(255, 45, 45, 0.4);
+    }
+    .restart:hover { 
+      background: #e01a1a; 
+    }
+    .hidden { 
+      display: none; 
+    }
+
+    /* Hint */
+    .hint { 
+      position: fixed; 
+      bottom: 12px; 
+      left: 50%; 
+      transform: translateX(-50%); 
+      color: #c8ffd2; 
+      font-size: 12px; 
+      background: rgba(0,0,0,0.5); 
+      padding: 6px 12px; 
+      border-radius: 10px; 
+      z-index: 10;
+    }
+
+    /* Crisp rendering */
+    canvas { 
+      image-rendering: -moz-crisp-edges; 
+      image-rendering: pixelated; 
+      image-rendering: crisp-edges;
+    }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div class="score" id="score">PUNTEGGIO 000000</div>
+    <div class="next">
+      <span>Prossimo</span>
+      <canvas id="nextIcon" width="48" height="48"></canvas>
+    </div>
+    <button class="btn" id="pauseBtn" aria-label="Pausa">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M10 8v8M14 8v8"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div id="wrap">
+    <canvas id="game" width="480" height="720" aria-label="Campo di gioco"></canvas>
+    <div class="center">
+      <div id="gameOver" class="overlay hidden">
+        <div class="title">GAME OVER</div>
+        <button class="restart" id="restartBtn">Ricomincia</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">Tocca per far cadere una palla — unisci due uguali!</div>
+
+<script>
+(() => {
+  /* ==========================
+     CONFIGURAZIONE
+  ========================== */
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Sfondo erboso
+  const grass = document.createElement('canvas');
+  grass.width = grass.height = 64;
+  const gctx = grass.getContext('2d');
+  gctx.fillStyle = '#2a6f38';
+  gctx.fillRect(0, 0, 64, 64);
+  for (let i = 0; i < 80; i++) {
+    gctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.04})`;
+    gctx.fillRect(Math.random() * 64, Math.random() * 64, 1, 1);
+  }
+  gctx.strokeStyle = 'rgba(255,255,255,.08)';
+  gctx.lineWidth = 1;
+  gctx.strokeRect(4, 4, 56, 56);
+  const grassPat = ctx.createPattern(grass, 'repeat');
+
+  // Tipi di palle
+  const TYPES = [
+    'golf','pingpong','squash','lacrosse','tennis','baseball','cricket','pallamano','pallavolo','basket','waterpolo','calcio','pallamedica'
+  ];
+  const SCORE_STEP = [10,20,40,80,120,180,260,360,520,700,900,1000];
+  const RADII = {
+    golf:18, pingpong:20, squash:22, lacrosse:24, tennis:26, baseball:28, cricket:30, pallamano:32, pallavolo:36, basket:40, waterpolo:42, calcio:44, pallamedica:50
+  };
+  const MASSE = {
+    golf:0.046, pingpong:0.0027, squash:0.024, lacrosse:0.145, tennis:0.058, baseball:0.145, cricket:0.163, pallamano:0.475, pallavolo:0.27, basket:0.62, waterpolo:0.45, calcio:0.43, pallamedica:3.0
+  };
+  const REST = {
+    golf:.75, pingpong:.88, squash:.7, lacrosse:.65, tennis:.8, baseball:.55, cricket:.55, pallamano:.5, pallavolo:.65, basket:.75, waterpolo:.6, calcio:.72, pallamedica:.35
+  };
+  const FRICTION = 0.004;
+  const MERGE_SPEED_THRESHOLD = 480;
+
+  let balls = [];
+  let paused = false;
+  let gameOver = false;
+  let score = 0;
+  let highestTypeIndex = 0;
+  let dropping = false; // evita multi-spawn
+  let spawnY = 60;
+
+  const R = (a, b) => a + Math.random() * (b - a);
+
+  // Cache sprite
+  const spriteCache = new Map();
+  function getSprite(type) {
+    if (spriteCache.has(type)) return spriteCache.get(type);
+    const r = RADII[type];
+    const s = Math.ceil(r * 2 * DPR + 6);
+    const c = document.createElement('canvas');
+    c.width = c.height = s;
+    const cx = c.getContext('2d');
+    cx.translate(s / 2, s / 2);
+
+    const fillStyles = {
+      golf:'#f4f4f4', pingpong:'#f0f0f0', squash:'#ffdd55', lacrosse:'#ffffff', tennis:'#b6ff4b', baseball:'#ffffff', cricket:'#fffaf0', pallamano:'#fef2d0', pallavolo:'#ffffff', basket:'#f07a1b', waterpolo:'#ffe23b', calcio:'#ffffff', pallamedica:'#6a6a6a'
+    };
+
+    // Base
+    cx.beginPath();
+    cx.arc(0, 0, r * DPR, 0, Math.PI * 2);
+    cx.fillStyle = fillStyles[type] || '#fff';
+    cx.fill();
+
+    // Riflesso
+    const grad = cx.createRadialGradient(-r * 0.3 * DPR, -r * 0.3 * DPR, 1, 0, 0, r * DPR);
+    grad.addColorStop(0, 'rgba(255,255,255,0.4)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.1)');
+    cx.fillStyle = grad;
+    cx.beginPath();
+    cx.arc(0, 0, r * DPR, 0, Math.PI * 2);
+    cx.fill();
+
+    // Dettagli minimi
+    if (type === 'calcio') {
+      cx.strokeStyle = '#111';
+      cx.lineWidth = 1 * DPR;
+      cx.setLineDash([4 * DPR, 4 * DPR]);
+      cx.beginPath();
+      cx.ellipse(0, 0, r * DPR * 0.9, r * DPR * 0.9, 0, 0, Math.PI * 2);
+      cx.stroke();
+    }
+    if (type === 'basket') {
+      cx.strokeStyle = '#d48000';
+      cx.lineWidth = 2 * DPR;
+      cx.beginPath();
+      cx.ellipse(0, 0, r * DPR, r * DPR * 0.8, 0, 0, Math.PI * 2);
+      cx.moveTo(0, -r * DPR);
+      cx.lineTo(0, r * DPR);
+      cx.moveTo(-r * DPR, 0);
+      cx.lineTo(r * DPR, 0);
+      cx.stroke();
+    }
+    if (type === 'tennis') {
+      cx.setLineDash([5 * DPR, 5 * DPR]);
+      cx.strokeStyle = '#111';
+      cx.lineWidth = 2 * DPR;
+      cx.beginPath();
+      cx.ellipse(0, 0, r * DPR * 1.0, r * DPR * 0.7, 0, 0, Math.PI * 2);
+      cx.stroke();
+    }
+
+    spriteCache.set(type, c);
+    return c;
+  }
+
+  // Prossimo sblocco
+  const nextIcon = document.getElementById('nextIcon');
+  const nextCtx = nextIcon.getContext('2d');
+  function redrawNext() {
+    nextCtx.clearRect(0, 0, nextIcon.width, nextIcon.height);
+    const idx = Math.min(highestTypeIndex + 1, TYPES.length - 1);
+    const type = TYPES[idx];
+    const s = getSprite(type);
+    const sz = 32 * DPR;
+    const x = (nextIcon.width - sz) / 2;
+    const y = (nextIcon.height - sz) / 2;
+    nextCtx.drawImage(s, x, y, sz, sz);
+  }
+
+  // Audio più morbido
+  const Audio = new (window.AudioContext || window.webkitAudioContext)();
+  let musicPlaying = false;
+
+  function sfx(kind) {
+    if (!musicPlaying) return;
+    const g = Audio.createGain();
+    g.connect(Audio.destination);
+    g.gain.value = 0.1; // volume basso
+
+    const o = Audio.createOscillator();
+    o.connect(g);
+    const now = Audio.currentTime;
+
+    if (kind === 'tink') {
+      o.type = 'sine';
+      o.frequency.setValueAtTime(800, now);
+      o.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+    } else if (kind === 'boing') {
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(220, now);
+      o.frequency.exponentialRampToValueAtTime(180, now + 0.15);
+    } else if (kind === 'merge') {
+      o.type = 'sine';
+      o.frequency.setValueAtTime(520, now);
+      o.frequency.exponentialRampToValueAtTime(330, now + 0.18);
+    }
+
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.25, now + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+    o.start(now);
+    o.stop(now + 0.26);
+  }
+
+  // UI
+  const scoreEl = document.getElementById('score');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const overEl = document.getElementById('gameOver');
+  const restartBtn = document.getElementById('restartBtn');
+
+  function fmt(n) { return 'PUNTEGGIO ' + String(n).padStart(6, '0'); }
+  function addScore(n, x, y) {
+    score += n;
+    scoreEl.textContent = fmt(score);
+    floatText(`+${n}`, x, y);
+  }
+
+  // Particelle
+  const particles = [];
+  function spawnStars(x, y) {
+    for (let i = 0; i < 10; i++) {
+      particles.push({
+        x, y,
+        vx: R(-100, 100),
+        vy: R(-150, -50),
+        life: R(0.5, 0.9),
+        t: 0,
+        color: '#ffd700'
+      });
+    }
+  }
+
+  function floatText(t, x, y) {
+    particles.push({
+      text: t,
+      x, y,
+      vx: 0,
+      vy: -40,
+      life: 0.8,
+      t: 0,
+      color: '#fff'
+    });
+  }
+
+  // Input (una palla per tocco)
+  canvas.addEventListener('pointerdown', onPointer);
+  function onPointer(e) {
+    if (gameOver || paused || dropping) return;
+    dropping = true;
+    if (!musicPlaying) {
+      musicPlaying = true;
+      Audio.resume();
+    }
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width * W;
+    const type = TYPES[Math.floor(Math.random() * (Math.min(highestTypeIndex + 1, 4)))];
+    spawnBall(x, spawnY, type);
+    setTimeout(() => { dropping = false; }, 200); // cooldown visivo
+  }
+
+  pauseBtn.addEventListener('click', () => {
+    paused = !paused;
+    pauseBtn.style.opacity = paused ? 0.7 : 1;
+  });
+
+  restartBtn.addEventListener('click', () => {
+    document.location.reload();
+  });
+
+  // Fisica
+  const G = 1200;
+  const dtFixed = 1 / 120;
+  let acc = 0;
+  let last = performance.now();
+
+  function spawnBall(x, y, type) {
+    const r = RADII[type];
+    const m = MASSE[type];
+    const b = {
+      id: Math.random().toString(36).slice(2),
+      type, x, y, vx: 0, vy: 0, r, m,
+      rest: REST[type],
+      squash: 0,
+      merging: false,
+      asleep: false
+    };
+    balls.push(b);
+    highestTypeIndex = Math.max(highestTypeIndex, TYPES.indexOf(type));
+    redrawNext();
+    sfx('tink');
+    return b;
+  }
+
+  // Inizio con 4 palle piccole
+  for (let i = 0; i < 4; i++) {
+    spawnBall(R(80, W - 80), R(100, 200), 'golf');
+  }
+  scoreEl.textContent = fmt(0);
+  redrawNext();
+
+  function update(dt) {
+    if (paused || gameOver) return;
+
+    for (const b of balls) {
+      if (b.asleep) continue;
+      b.vy += G * dt;
+      b.vx *= (1 - FRICTION);
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+
+      // Muri
+      if (b.x - b.r < 8) {
+        b.x = 8 + b.r;
+        b.vx = -b.vx * b.rest * 0.8;
+      }
+      if (b.x + b.r > W - 8) {
+        b.x = W - 8 - b.r;
+        b.vx = -b.vx * b.rest * 0.8;
+      }
+      if (b.y + b.r > H - 8) {
+        b.y = H - 8 - b.r;
+        b.vy = -Math.abs(b.vy) * b.rest;
+        if (Math.abs(b.vy) < 20) b.vy = 0;
+        if (Math.abs(b.vx) < 20) b.vx *= 0.95;
+        if (Math.abs(b.vy) < 15 && Math.abs(b.vx) < 10) b.asleep = true;
+      }
+    }
+
+    // Collisioni
+    const cell = 64;
+    const grid = new Map();
+    function key(i, j) { return `${i},${j}`; }
+    for (const b of balls) {
+      const i = Math.floor(b.x / cell), j = Math.floor(b.y / cell);
+      for (let ii = i - 1; ii <= i + 1; ii++) {
+        for (let jj = j - 1; jj <= j + 1; jj++) {
+          const k = key(ii, jj);
+          if (!grid.has(k)) grid.set(k, []);
+          grid.get(k).push(b);
+        }
+      }
+    }
+
+    const pairs = new Set();
+    for (const arr of grid.values()) {
+      for (let a = 0; a < arr.length; a++) {
+        for (let d = a + 1; d < arr.length; d++) {
+          const A = arr[a], B = arr[d];
+          const id = A.id < B.id ? A.id + '|' + B.id : B.id + '|' + A.id;
+          if (pairs.has(id)) continue;
+          pairs.add(id);
+
+          const dx = B.x - A.x, dy = B.y - A.y;
+          const dist2 = dx * dx + dy * dy;
+          const rr = A.r + B.r;
+          if (dist2 > rr * rr) continue;
+
+          const dist = Math.sqrt(dist2) || 1;
+          const nx = dx / dist, ny = dy / dist;
+          const overlap = rr - dist;
+          const totalMass = A.m + B.m;
+          const aShare = B.m / totalMass, bShare = A.m / totalMass;
+          A.x -= nx * overlap * aShare;
+          A.y -= ny * overlap * aShare;
+          B.x += nx * overlap * bShare;
+          B.y += ny * overlap * bShare;
+
+          const rvx = B.vx - A.vx, rvy = B.vy - A.vy;
+          const velAlongNormal = rvx * nx + rvy * ny;
+          if (velAlongNormal < 0) {
+            const e = Math.min(A.rest, B.rest);
+            const j = -(1 + e) * velAlongNormal / (1 / A.m + 1 / B.m);
+            const impX = j * nx, impY = j * ny;
+            A.vx -= impX / A.m;
+            A.vy -= impY / A.m;
+            B.vx += impX / B.m;
+            B.vy += impY / B.m;
+            A.squash = B.squash = Math.min(1, Math.abs(velAlongNormal) / 600);
+            A.asleep = B.asleep = false;
+          }
+
+          if (A.type === B.type && !A.merging && !B.merging && Math.hypot(rvx, rvy) < MERGE_SPEED_THRESHOLD) {
+            mergeBalls(A, B);
+          }
+        }
+      }
+    }
+
+    // Game Over
+    for (const b of balls) {
+      if (b.asleep && b.y - b.r < 100) {
+        endGame();
+        return;
+      }
+    }
+
+    // Aggiorna particelle
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.t += dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 500 * dt;
+      if (p.t > p.life) particles.splice(i, 1);
+    }
+  }
+
+  function endGame() {
+    if (gameOver) return;
+    gameOver = true;
+    overEl.classList.remove('hidden');
+  }
+
+  function mergeBalls(A, B) {
+    sfx('merge');
+    spawnStars((A.x + B.x) / 2, (A.y + B.y) / 2);
+    const idx = TYPES.indexOf(A.type);
+    if (idx < SCORE_STEP.length) addScore(SCORE_STEP[idx], (A.x + B.x) / 2, (A.y + B.y) / 2);
+
+    A.merging = B.merging = true;
+    const totalMass = A.m + B.m;
+    const x = (A.x * A.m + B.x * B.m) / totalMass;
+    const y = (A.y * A.m + B.y * B.m) / totalMass;
+    const vx = (A.vx * A.m + B.vx * B.m) / totalMass;
+    const vy = (A.vy * A.m + B.vy * B.m) / totalMass;
+
+    balls = balls.filter(b => b !== A && b !== B);
+    const nextIdx = Math.min(idx + 1, TYPES.length - 1);
+    const C = spawnBall(x, y, TYPES[nextIdx]);
+    C.vx = vx;
+    C.vy = vy * 0.5;
+    highestTypeIndex = Math.max(highestTypeIndex, nextIdx);
+    redrawNext();
+  }
+
+  // Disegno
+  function draw() {
+    ctx.save();
+    ctx.fillStyle = grassPat;
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(6, 6, W - 12, H - 12);
+    ctx.restore();
+
+    for (const b of balls) {
+      const spr = getSprite(b.type);
+      const sx = spr.width / 2, sy = spr.height / 2;
+      const squ = 1 - Math.min(0.2, b.squash * 0.2);
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.scale(1 / squ, squ);
+      ctx.drawImage(spr, -sx, -sy, spr.width, spr.height);
+      ctx.restore();
+      b.squash *= 0.8;
+    }
+
+    // Particelle
+    ctx.save();
+    for (const p of particles) {
+      const alpha = 1 - p.t / p.life;
+      ctx.globalAlpha = alpha;
+      if (p.text) {
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText(p.text, p.x, p.y);
+      } else {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y - 5);
+        ctx.lineTo(p.x + 3, p.y + 3);
+        ctx.lineTo(p.x - 3, p.y + 3);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  function loop() {
+    const now = performance.now();
+    let dt = (now - last) / 1000;
+    last = now;
+    if (dt > 0.1) dt = 0.1;
+
+    acc += dt;
+    while (acc >= dtFixed) {
+      update(dtFixed);
+      acc -= dtFixed;
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+})();
+</script>
+</body>
+</html>

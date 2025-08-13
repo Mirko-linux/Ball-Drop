@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ball Drop</string>
+    <string name="title_activity_main">Ball Drop</string>
+    <string name="package_name">com.mirkoyuridonato.balldrop</string>
+    <string name="custom_url_scheme">com.mirkoyuridonato.balldrop</string>
+</resources>

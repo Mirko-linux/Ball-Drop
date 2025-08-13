@@ -1,0 +1,26 @@
+{
+  "name": "ball-drop",
+  "version": "1.0.0",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "game",
+    "puzzle",
+    "merge",
+    "casual-game",
+    "html5-game",
+    "android-app",
+    "ball-game",
+    "sports"
+  ],
+  "author": "Mirko Yuri Donato",
+  "license": "MIT",
+  "description": "Un gioco mobile open source scritto in HTML, JavaScript e CSS. Unisci palle dello stesso tipo per salire di livello!",
+  "dependencies": {
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/core": "^7.4.2"
+  }
+}
