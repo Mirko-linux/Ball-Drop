@@ -22,8 +22,9 @@ Se una palla entra nella zona rossa in alto, il gioco termina.
 ### Palle speciali  
 Il gioco include palle speciali che aggiungono strategia e varietà:  
 - Bomba: non si fonde, ma esplode distruggendo le palle vicine  
-- Palla di Vetro: dà il triplo dei punti quando si fonde, ma si rompe se tocca terra senza fondersi  
-- Palla Vortice: attira le palle vicine per 2 secondi dopo il merge  
+- Palla di Vetro: dà il triplo dei punti quando si fonde, ma, essendo fatta di vetro, si rompe se tocca terra  
+- Palla Vortice: attira le palle vicine per 2 secondi dopo il merge
+- Detonatore: come con la bomba, se collide con un altro detonatore, fa scoppiare tutte le bombe-
 
 Queste palle appaiono casualmente una volta raggiunto un certo livello.
 
@@ -43,7 +44,7 @@ Obiettivo: ottenere il punteggio più alto possibile!
 Il gioco è realizzato in un unico file HTML per semplicità e portabilità. Non richiede librerie esterne.
 
 ## Gioca ora
-Il gioco è disponobile su [https://theballdrop.netlify.app/](https://theballdrop.netlify.app/)
+Il gioco è disponibile in prova su [https://theballdrop.netlify.app/](https://theballdrop.netlify.app/). Prossimamente quando lo sviluppo sarà terminato verrà rilasciata sia una versione per mobile in alcuni store digitali android sia una versione online giocabile direttamente dal browser su [Itch.io](https://itch.io/) 
 
 ## Disclaimer
 
