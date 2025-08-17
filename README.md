@@ -45,6 +45,6 @@ Il gioco è realizzato in un unico file HTML per semplicità e portabilità. Non
 ## Gioca ora
 Il gioco è disponobile su [https://theballdrop.netlify.app/](https://theballdrop.netlify.app/)
 
-## Disclamer
+## Disclaimer
 
 Alcune parti del codice sorgente sono state realizzate mediante l'uso dell'Intelligenza Artificiale, gli effetti sonori sono stati reliazzati con il modello [_Sound Forge_](https://huggingface.co/spaces?q=ArcadiaAISoundForge)
