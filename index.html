@@ -242,15 +242,13 @@
 
 <script>
 (() => {
-  /* ==========================
-     CONFIGURAZIONE
-  ========================== */
+  // Configurazione base
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
 
-  // Sfondo erboso
+  // Sfondo a effetto erba
   const grass = document.createElement('canvas');
   grass.width = grass.height = 128;
   const gctx = grass.getContext('2d');
@@ -291,21 +289,19 @@
   const FRICTION = 0.004;
   const MERGE_SPEED_THRESHOLD = 480;
 
-  // Meccaniche di livello
   let level = 1;
   const LEVEL_THRESHOLD = 500;
   const BASE_G = 1200;
   let G = BASE_G;
 
-  // ✅ ZONA PERICOLOSA IN ALTO
-  const BASE_DANGER_HEIGHT = 120;  // Parte da 120px dall'alto
-  let gameOverY = BASE_DANGER_HEIGHT;  // La linea rossa scende col livello
+  // Zona pericolosa in alto
+  const BASE_DANGER_HEIGHT = 120;
+  let gameOverY = BASE_DANGER_HEIGHT;
 
-  // Palle speciali
   const SPECIAL_TYPES = new Set(['bomba', 'vetro', 'vortice']);
   const SPECIAL_CHANCE = 0.1;
 
-  // Stato globale
+  // Stato
   let balls = [];
   let paused = false;
   let gameOver = false;
@@ -318,7 +314,7 @@
 
   const R = (a, b) => a + Math.random() * (b - a);
 
-  // Colori
+  // Colori palle
   const COLORS = {
     golf: '#f5f5f5', pingpong: '#f8f8f8', squash: '#ffdd55', lacrosse: '#ffffff',
     tennis: '#ccff33', baseball: '#f5f5dc', cricket: '#fffaf0', pallamano: '#f0e6d2',
@@ -406,7 +402,7 @@
     return c;
   }
 
-  // UI
+  // Elementi UI
   const scoreEl = document.getElementById('score');
   const levelEl = document.getElementById('level');
   const finalScoreEl = document.getElementById('finalScore');
@@ -430,19 +426,10 @@
     const newLevel = Math.floor(score / LEVEL_THRESHOLD) + 1;
     if (newLevel > level) {
       level = newLevel;
-      onLevelUp();
+      levelEl.textContent = `LIVELLO ${level}`;
+      ctx.filter = 'blur(2px)';
+      setTimeout(() => ctx.filter = 'none', 100);
     }
-  }
-
-  function onLevelUp() {
-    for (const b of balls) {
-      b.rest = Math.max(0.25, REST[b.type] - (level - 1) * 0.05);
-    }
-    floatText(`LIVELLO ${level}!`, W / 2, H / 2);
-    levelEl.textContent = `LIVELLO ${level}`;
-    sfx('boing');
-    ctx.filter = 'blur(2px)';
-    setTimeout(() => ctx.filter = 'none', 100);
   }
 
   // Particelle
@@ -534,7 +521,7 @@
     setTimeout(() => { dropping = false; }, 250);
   }
 
-  // Hint
+  // Hint iniziale
   setTimeout(() => {
     hintEl.classList.add('show');
     setTimeout(() => hintEl.classList.remove('show'), 3000);
@@ -543,11 +530,10 @@
   pauseBtn.addEventListener('click', () => {
     paused = !paused;
     pauseBtn.style.opacity = paused ? 0.6 : 1;
-    if (paused) sfx('boing');
   });
 
   restartBtn.addEventListener('click', () => {
-    document.location.reload();
+    location.reload();
   });
 
   // Fisica
@@ -585,7 +571,7 @@
     nextCtx.drawImage(s, x, y, sz, sz);
   }
 
-  // Inizio
+  // Inizializzazione
   for (let i = 0; i < 4; i++) {
     spawnBall(R(80, W - 80), R(100, 200), 'golf');
   }
@@ -596,9 +582,8 @@
   function update(dt) {
     if (paused || gameOver) return;
 
-    // 🔄 Gravità e zona pericolosa
     G = BASE_G + (level - 1) * 100;
-    gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10); // Massimo 300px
+    gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10);
 
     for (const b of balls) {
       if (b.asleep) continue;
@@ -607,7 +592,7 @@
       b.x += b.vx * dt;
       b.y += b.vy * dt;
 
-      // Muri
+      // Collisioni con i bordi
       if (b.x - b.r < 10) {
         b.x = 10 + b.r;
         b.vx = -b.vx * b.rest * 0.8;
@@ -621,7 +606,6 @@
         const effectiveRest = Math.max(0.2, b.rest - (level - 1) * 0.04);
         b.vy = -Math.abs(b.vy) * effectiveRest;
 
-        // 💎 Palla di vetro: si rompe
         if (b.type === 'vetro' && Math.abs(b.vy) < 30) {
           floatText('SHATTER!', b.x, b.y);
           sfx('boing');
@@ -643,7 +627,7 @@
       }
     }
 
-    // Vortice
+    // Effetto vortice
     if (vortexEffect) {
       vortexEffect.duration -= dt;
       if (vortexEffect.duration <= 0) {
@@ -663,7 +647,7 @@
       }
     }
 
-    // Grid collision
+    // Grid per collisioni
     const cell = 64;
     const grid = new Map();
     function key(i, j) { return `${i},${j}`; }
@@ -729,7 +713,7 @@
       }
     }
 
-    // ✅ GAME OVER: se una palla dormiente entra nella zona rossa in alto
+    // Controllo game over
     for (const b of balls) {
       if (b.asleep && b.y - b.r < gameOverY) {
         endGame();
@@ -737,6 +721,7 @@
       }
     }
 
+    // Aggiorna particelle
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.t += dt;
@@ -779,7 +764,6 @@
       addScore(SCORE_STEP[idx] * scoreBonus, (A.x + B.x) / 2, (A.y + B.y) / 2);
     }
 
-    A.merging = B.merging = true;
     const totalMass = A.m + B.m;
     const x = (A.x * A.m + B.x * B.m) / totalMass;
     const y = (A.y * A.m + B.y * B.m) / totalMass;
@@ -850,7 +834,7 @@
     ctx.fillStyle = grassPat;
     ctx.fillRect(0, 0, W, H);
 
-    // 🔴 ZONA PERICOLOSA IN ALTO
+    // Zona pericolosa
     ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
     ctx.fillRect(0, 0, W, gameOverY);
 
@@ -881,7 +865,7 @@
       b.squash *= 0.7;
     }
 
-    // Vortice
+    // Disegna vortice
     if (vortexEffect) {
       ctx.save();
       ctx.globalAlpha = 0.3;
@@ -895,6 +879,7 @@
       ctx.restore();
     }
 
+    // Disegna particelle
     ctx.save();
     for (const p of particles) {
       const alpha = 1 - p.t / p.life;
