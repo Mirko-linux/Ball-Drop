@@ -6,5 +6,41 @@
 <p align="center">
   <img src="Screenshot.png" width="300" alt="Ball Drop - Screenshot del gioco">
 </p>
+Ball Drop è un semplice videogioco open source di tipo Merge game, in cui devi far cadere palle sportive, unirle a coppie e farle evolvere da piccole a giganti! Più le unisci, più diventano grandi, più punti fai, ma occhio a non superare la linea rossa semmò game over.
 
-Ball Drop è un semplice videogioco open spurce di tipo Merge game, in cui devi far cadere palle sportive, unirle a coppie e farle evolvere da piccole a giganti! Più le unisci, più diventano grandi, più punti fai.
+
+## Funzionamento  
+Il gioco si basa su una meccanica semplice ma coinvolgente: ogni volta che fai clic (o tocco su mobile), una palla cade dal cielo. Quando due palle dello stesso tipo si toccano, si fondono in una palla più grande del livello successivo, da golf a palla medica. Il punteggio aumenta a ogni fusione.
+
+Con il passare del tempo e l’aumentare del punteggio, il gioco diventa più difficile:  
+- La gravità aumenta  
+- Il rimbalzo delle palle diminuisce  
+- La zona pericolosa in alto si espande, riducendo lo spazio disponibile  
+
+Se una palla "addormentata" (ferma) entra nella zona rossa in alto, il gioco termina.
+
+### Palle speciali  
+Il gioco include palle speciali che aggiungono strategia e varietà:  
+- Bomba: non si fonde, ma esplode distruggendo le palle vicine  
+- Palla di Vetro: dà il triplo dei punti quando si fonde, ma si rompe se tocca terra senza fondersi  
+- Palla Vortice: attira le palle vicine per 2 secondi dopo il merge  
+
+Queste palle appaiono casualmente una volta raggiunto un certo livello.
+
+### Come giocare  
+1. Clicca o tocca lo schermo per far cadere una palla  
+2. Cerca di posizionarla in modo da unirla a una palla uguale  
+3. Continua a fondere per salire di livello e aumentare il punteggio  
+4. Evita che le palle raggiungano la zona rossa in alto  
+
+Obiettivo: ottenere il punteggio più alto possibile!
+
+## Tecnologie utilizzate  
+- HTML5: struttura e canvas per il rendering  
+- JavaScript: logica di gioco, fisica, collisioni, UI  
+- CSS: stile, effetti visivi e layout responsive  
+
+Il gioco è realizzato in un unico file HTML per semplicità e portabilità. Non richiede librerie esterne.
+
+## Gioca ora
+Il gioco è disponobile su [https://theballdrop.netlify.app/](https://theballdrop.netlify.app/)
