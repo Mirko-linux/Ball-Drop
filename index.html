@@ -102,6 +102,30 @@
       transform: scale(1.05);
     }
 
+    /* HUD Potenziamenti */
+    .powerups {
+      display: flex;
+      gap: 10px;
+      font-size: 12px;
+      color: #d0f0d0;
+    }
+    .powerup {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .powerup-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+    .jolly-icon { background: #ffd700; border: 1px solid #ff9900; }
+    .fuoco-icon { background: #ff4500; }
+
     #wrap { 
       position: relative; 
       flex: 1; 
@@ -217,13 +241,30 @@
         <canvas id="nextIcon" width="48" height="48"></canvas>
       </div>
       <div class="level" id="level">LIVELLO 1</div>
+      <div class="powerups" id="powerups">
+        <div class="powerup" id="jolly" style="display: none;">
+          <div class="powerup-icon jolly-icon"></div>
+          <span>Jolly</span>
+        </div>
+        <div class="powerup" id="fuoco" style="display: none;">
+          <div class="powerup-icon fuoco-icon"></div>
+          <span>Fuoco</span>
+        </div>
+      </div>
     </div>
-    <button class="btn" id="pauseBtn" aria-label="Pausa">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-        <circle cx="12" cy="12" r="9" stroke-opacity="0.3"/>
-        <path d="M10 8v8M14 8v8" stroke-linecap="round"/>
-      </svg>
-    </button>
+    <div>
+      <button class="btn" id="pauseBtn" aria-label="Pausa">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <circle cx="12" cy="12" r="9" stroke-opacity="0.3"/>
+          <path d="M10 8v8M14 8v8" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="btn" id="inventoryBtn" aria-label="Inventario" style="display: none;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M4 7v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V7H4zm0-2h16v2H4V5zm4 4h8v2H8V9z"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <div id="wrap">
@@ -238,17 +279,19 @@
     </div>
   </div>
 
-  <div class="hint" id="hint">Tocca per far cadere una palla — unisci due uguali!</div>
+  <div class="hint" id="hint">Tieni premuto per “agganciare” la palla, trascina nella fascia alta e lascia per farla cadere!</div>
 
 <script>
 (() => {
-  // Configurazione base
+  /* ==========================
+     CONFIGURAZIONE
+  ========================== */
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
 
-  // Sfondo a effetto erba
+  // Sfondo erboso
   const grass = document.createElement('canvas');
   grass.width = grass.height = 128;
   const gctx = grass.getContext('2d');
@@ -271,50 +314,57 @@
   // Tipi di palle
   const TYPES = [
     'golf','pingpong','squash','lacrosse','tennis','baseball','cricket','pallamano','pallavolo','basket','waterpolo','calcio','pallamedica',
-    'bomba', 'vetro', 'vortice'
+    'bomba', 'vetro', 'vortice', 'detonatrice', 'metal', 'oro'
   ];
   const SCORE_STEP = [10,20,40,80,120,180,260,360,520,700,900,1000];
   const RADII = {
     golf:18, pingpong:20, squash:22, lacrosse:24, tennis:26, baseball:28, cricket:30, pallamano:32, pallavolo:36, basket:40, waterpolo:42, calcio:44, pallamedica:50,
-    bomba: 30, vetro: 28, vortice: 32
+    bomba: 30, vetro: 28, vortice: 32, detonatrice: 28, metal: 26, oro: 26
   };
   const MASSE = {
     golf:0.046, pingpong:0.0027, squash:0.024, lacrosse:0.145, tennis:0.058, baseball:0.145, cricket:0.163, pallamano:0.475, pallavolo:0.27, basket:0.62, waterpolo:0.45, calcio:0.43, pallamedica:3.0,
-    bomba: 0.8, vetro: 0.1, vortice: 0.3
+    bomba: 0.8, vetro: 0.1, vortice: 0.3, detonatrice: 0.2, metal: 0.6, oro: 0.5
   };
   const REST = {
     golf:.75, pingpong:.88, squash:.7, lacrosse:.65, tennis:.8, baseball:.55, cricket:.55, pallamano:.5, pallavolo:.65, basket:.75, waterpolo:.6, calcio:.72, pallamedica:.35,
-    bomba: 0.4, vetro: 0.9, vortice: 0.6
+    bomba: 0.4, vetro: 0.9, vortice: 0.6, detonatrice: 0.7, metal: 0.3, oro: 0.2
   };
   const FRICTION = 0.004;
   const MERGE_SPEED_THRESHOLD = 480;
 
+  // Meccaniche di livello
   let level = 1;
   const LEVEL_THRESHOLD = 500;
   const BASE_G = 1200;
   let G = BASE_G;
-
-  // Zona pericolosa in alto
   const BASE_DANGER_HEIGHT = 120;
   let gameOverY = BASE_DANGER_HEIGHT;
 
-  const SPECIAL_TYPES = new Set(['bomba', 'vetro', 'vortice']);
+  // Fascia alta per il posizionamento
+  const TOP_BAND_HEIGHT = 120;
+  let spawnY = Math.min(60, TOP_BAND_HEIGHT / 2);
+
+  // Palle speciali
+  const SPECIAL_TYPES = new Set(['bomba', 'vetro', 'vortice', 'detonatrice', 'metal', 'oro']);
   const SPECIAL_CHANCE = 0.1;
 
-  // Stato
+  // Stato globale
   let balls = [];
   let paused = false;
   let gameOver = false;
   let score = 0;
   let bestScore = parseInt(localStorage.getItem('ballDropBest') || '0');
   let highestTypeIndex = 0;
-  let dropping = false;
-  let spawnY = 60;
   let vortexEffect = null;
+
+  // 💎 Potenziamenti
+  let hasJolly = false;
+  let hasFuoco = false;
+  let heldPowerup = null;
 
   const R = (a, b) => a + Math.random() * (b - a);
 
-  // Colori palle
+  // Colori
   const COLORS = {
     golf: '#f5f5f5', pingpong: '#f8f8f8', squash: '#ffdd55', lacrosse: '#ffffff',
     tennis: '#ccff33', baseball: '#f5f5dc', cricket: '#fffaf0', pallamano: '#f0e6d2',
@@ -322,7 +372,10 @@
     pallamedica: '#6a6a6a',
     bomba: '#8b0000',
     vetro: '#ffffff',
-    vortice: '#7b68ee'
+    vortice: '#7b68ee',
+    detonatrice: '#ff4500',
+    metal: '#a9a9a9',
+    oro: '#ffd700'
   };
 
   // Cache sprite
@@ -343,6 +396,39 @@
       cx.fillStyle = '#ffffff';
       cx.fill();
       cx.globalAlpha = 1;
+    } else if (type === 'detonatrice') {
+      cx.fillStyle = '#ff4500';
+      cx.fill();
+      cx.strokeStyle = '#000';
+      cx.lineWidth = 2 * DPR;
+      cx.beginPath();
+      cx.moveTo(-r * 0.5 * DPR, -r * 0.5 * DPR);
+      cx.lineTo(r * 0.5 * DPR, r * 0.5 * DPR);
+      cx.moveTo(r * 0.5 * DPR, -r * 0.5 * DPR);
+      cx.lineTo(-r * 0.5 * DPR, r * 0.5 * DPR);
+      cx.stroke();
+    } else if (type === 'metal') {
+      cx.fillStyle = '#a9a9a9';
+      cx.fill();
+      cx.strokeStyle = '#696969';
+      cx.lineWidth = 2 * DPR;
+      cx.stroke();
+      cx.fillStyle = '#d3d3d3';
+      cx.fillRect(-r * 0.3 * DPR, -r * 0.3 * DPR, r * 0.6 * DPR, r * 0.6 * DPR);
+    } else if (type === 'oro') {
+      cx.fillStyle = '#ffd700';
+      cx.fill();
+      cx.strokeStyle = '#ff9900';
+      cx.lineWidth = 2 * DPR;
+      cx.stroke();
+      cx.beginPath();
+      cx.moveTo(-r * 0.4 * DPR, 0);
+      cx.lineTo(r * 0.4 * DPR, 0);
+      cx.moveTo(0, -r * 0.4 * DPR);
+      cx.lineTo(0, r * 0.4 * DPR);
+      cx.strokeStyle = '#000';
+      cx.lineWidth = 1 * DPR;
+      cx.stroke();
     } else {
       cx.fillStyle = COLORS[type] || '#fff';
       cx.fill();
@@ -402,7 +488,7 @@
     return c;
   }
 
-  // Elementi UI
+  // UI
   const scoreEl = document.getElementById('score');
   const levelEl = document.getElementById('level');
   const finalScoreEl = document.getElementById('finalScore');
@@ -410,11 +496,20 @@
   const nextIcon = document.getElementById('nextIcon');
   const nextCtx = nextIcon.getContext('2d');
   const pauseBtn = document.getElementById('pauseBtn');
+  const inventoryBtn = document.getElementById('inventoryBtn');
   const overEl = document.getElementById('gameOver');
   const restartBtn = document.getElementById('restartBtn');
   const hintEl = document.getElementById('hint');
+  const jollyEl = document.getElementById('jolly');
+  const fuocoEl = document.getElementById('fuoco');
 
   function fmt(n) { return 'PUNTEGGIO ' + String(n).padStart(6, '0'); }
+
+  function updatePowerupsUI() {
+    jollyEl.style.display = hasJolly ? 'flex' : 'none';
+    fuocoEl.style.display = hasFuoco ? 'flex' : 'none';
+    inventoryBtn.style.display = (hasJolly || hasFuoco) ? 'grid' : 'none';
+  }
 
   function addScore(n, x, y) {
     score += n;
@@ -426,10 +521,19 @@
     const newLevel = Math.floor(score / LEVEL_THRESHOLD) + 1;
     if (newLevel > level) {
       level = newLevel;
-      levelEl.textContent = `LIVELLO ${level}`;
-      ctx.filter = 'blur(2px)';
-      setTimeout(() => ctx.filter = 'none', 100);
+      onLevelUp();
     }
+  }
+
+  function onLevelUp() {
+    for (const b of balls) {
+      b.rest = Math.max(0.25, REST[b.type] - (level - 1) * 0.05);
+    }
+    floatText(`LIVELLO ${level}!`, W / 2, H / 2);
+    levelEl.textContent = `LIVELLO ${level}`;
+    sfx('boing');
+    ctx.filter = 'blur(2px)';
+    setTimeout(() => ctx.filter = 'none', 100);
   }
 
   // Particelle
@@ -481,6 +585,7 @@
       case 'tink': o.type = 'sine'; o.frequency.setValueAtTime(700, now); o.frequency.exponentialRampToValueAtTime(500, now + 0.1); break;
       case 'boing': o.type = 'triangle'; o.frequency.setValueAtTime(200, now); o.frequency.exponentialRampToValueAtTime(150, now + 0.15); break;
       case 'merge': o.type = 'sawtooth'; o.frequency.setValueAtTime(400, now); o.frequency.exponentialRampToValueAtTime(250, now + 0.2); break;
+      case 'powerup': o.type = 'square'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(600, now + 0.15); break;
     }
     g.gain.setValueAtTime(0.0001, now);
     g.gain.exponentialRampToValueAtTime(0.3, now + 0.02);
@@ -489,39 +594,75 @@
     o.stop(now + 0.26);
   }
 
-  // Input
-  canvas.addEventListener('pointerdown', onPointer);
-  function onPointer(e) {
-    if (gameOver || paused || dropping) return;
-    dropping = true;
-    if (!musicPlaying) {
-      musicPlaying = true;
-      Audio.resume();
-    }
+  // 🔁 NUOVO SISTEMA DI DROP: tieni, sposta orizzontalmente nella fascia alta, rilascia per far cadere
+  let heldBall = null;
+  let isDragging = false;
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (gameOver || paused || isDragging) return;
+
     const rect = canvas.getBoundingClientRect();
     let x = (e.clientX - rect.left) / rect.width * W;
 
-    const safe = balls.every(b => Math.hypot(b.x - x, b.y - spawnY) > b.r + 20);
-    if (!safe) x = W / 2 + R(-100, 100);
+    // Bordi di sicurezza
+    if (x < 10 || x > W - 10) return;
 
+    // Crea la palla nella fascia alta, "in mano"
     let type;
-    if (level >= 3 && Math.random() < SPECIAL_CHANCE) {
-      type = ['bomba', 'vetro', 'vortice'][Math.floor(Math.random() * 3)];
+    if (level >= 5 && Math.random() < SPECIAL_CHANCE) {
+      const choices = ['bomba', 'vetro', 'vortice', 'detonatrice'];
+      if (level >= 7 && Math.random() < 0.3) choices.push('metal');
+      if (level >= 10 && Math.random() < 0.1) choices.push('oro');
+      type = choices[Math.floor(Math.random() * choices.length)];
     } else {
       type = TYPES[Math.floor(R(0, Math.min(highestTypeIndex + 1, 5)))];
     }
 
-    spawnBall(x, spawnY, type);
+    heldBall = spawnBall(x, spawnY, type);
+    heldBall.vx = 0;
+    heldBall.vy = 0;
+    heldBall.held = true;     // <- importante: niente fisica/collisioni finché è in mano
+    isDragging = true;
+
+    floatText('PRONTO', x, spawnY - 20);
     sfx('tink');
 
     if (balls.length > 6) {
       hintEl.classList.remove('show');
     }
 
-    setTimeout(() => { dropping = false; }, 250);
-  }
+    // Spostamento laterale (solo X), ricalcola rect ogni volta per sicurezza
+    const moveHandler = (ev) => {
+      if (!isDragging || !heldBall) return;
+      const r = canvas.getBoundingClientRect();
+      const newX = (ev.clientX - r.left) / r.width * W;
+      const minX = 10 + heldBall.r;
+      const maxX = W - 10 - heldBall.r;
+      heldBall.x = Math.max(minX, Math.min(maxX, newX));
+      heldBall.y = spawnY; // resta nella band superiore
+    };
 
-  // Hint iniziale
+    // Rilascia → attiva la gravità
+    const upHandler = () => {
+      if (isDragging && heldBall) {
+        heldBall.held = false; // ora subisce la fisica
+        heldBall.asleep = false;
+      }
+      isDragging = false;
+      heldBall = null;
+      document.removeEventListener('pointermove', moveHandler);
+      document.removeEventListener('pointerup', upHandler);
+      document.removeEventListener('pointercancel', upHandler);
+      document.removeEventListener('pointerleave', upHandler);
+    };
+
+    document.addEventListener('pointermove', moveHandler, { passive: true });
+    document.addEventListener('pointerup', upHandler);
+    document.addEventListener('pointercancel', upHandler);
+    document.addEventListener('pointerleave', upHandler);
+  });
+
+  // Hint
   setTimeout(() => {
     hintEl.classList.add('show');
     setTimeout(() => hintEl.classList.remove('show'), 3000);
@@ -530,10 +671,36 @@
   pauseBtn.addEventListener('click', () => {
     paused = !paused;
     pauseBtn.style.opacity = paused ? 0.6 : 1;
+    if (paused) sfx('boing');
+  });
+
+  // 🔒 Inventario
+  inventoryBtn.addEventListener('click', () => {
+    if (hasFuoco) {
+      floatText('FUOCO!', W / 2, H / 2);
+      sfx('powerup');
+      for (const b of balls) {
+        for (let i = 0; i < 10; i++) {
+          particles.push({
+            x: b.x, y: b.y,
+            vx: R(-100, 100), vy: R(-150, 150),
+            life: R(0.3, 0.7), t: 0,
+            color: '#ff4500', size: R(2, 4)
+          });
+        }
+      }
+      balls = [];
+      hasFuoco = false;
+    } else if (hasJolly) {
+      floatText('JOLLY: tocca per scegliere!', W / 2, H / 2);
+      sfx('powerup');
+      heldPowerup = 'jolly';
+    }
+    updatePowerupsUI();
   });
 
   restartBtn.addEventListener('click', () => {
-    location.reload();
+    document.location.reload();
   });
 
   // Fisica
@@ -550,7 +717,8 @@
       rest: REST[type],
       squash: 0,
       merging: false,
-      asleep: false
+      asleep: false,
+      held: false
     };
     balls.push(b);
     if (!SPECIAL_TYPES.has(type)) {
@@ -571,13 +739,105 @@
     nextCtx.drawImage(s, x, y, sz, sz);
   }
 
-  // Inizializzazione
+  // Inizio
   for (let i = 0; i < 4; i++) {
     spawnBall(R(80, W - 80), R(100, 200), 'golf');
   }
   scoreEl.textContent = fmt(0);
   levelEl.textContent = `LIVELLO ${level}`;
-  redrawNext();
+  updatePowerupsUI();
+
+  // 🔥 Bomba distrugge metallo e oro
+  function explode(x, y) {
+    sfx('boing');
+    floatText('BOOM!', x, y);
+    for (let i = 0; i < 20; i++) {
+      particles.push({
+        x, y,
+        vx: R(-200, 200),
+        vy: R(-250, -60),
+        life: R(0.5, 0.9),
+        t: 0,
+        color: ['#ff4500', '#ff8c00', '#ffd700'][Math.floor(R(0, 3))],
+        size: R(3, 6) * DPR
+      });
+    }
+
+    const newBalls = [];
+    for (const b of balls) {
+      const dist = Math.hypot(b.x - x, b.y - y);
+      if (dist < 80) {
+        if (b.type === 'metal') {
+          hasJolly = true;
+          floatText('JOLLY!', b.x, b.y);
+          sfx('powerup');
+        } else if (b.type === 'oro') {
+          addScore(500, b.x, b.y);
+          if (Math.random() < 0.7) {
+            hasJolly = true;
+            floatText('JOLLY!', b.x, b.y);
+          } else {
+            hasFuoco = true;
+            floatText('FUOCO!', b.x, b.y);
+          }
+          sfx('powerup');
+        }
+        for (let i = 0; i < 5; i++) {
+          particles.push({
+            x: b.x, y: b.y,
+            vx: R(-100, 100), vy: R(-150, 150),
+            life: R(0.3, 0.7), t: 0,
+            color: '#aaa', size: 2
+          });
+        }
+      } else {
+        newBalls.push(b);
+      }
+    }
+    balls = newBalls;
+    updatePowerupsUI();
+  }
+
+  // 🔥 Detona tutte le bombe
+  function detonateAllBombs() {
+    sfx('boing');
+    floatText('DETONATE!', W / 2, H / 2);
+    const bombBalls = balls.filter(b => b.type === 'bomba' && !b.held);
+    if (bombBalls.length === 0) return;
+
+    balls = balls.filter(b => b.type !== 'bomba');
+
+    for (const b of bombBalls) {
+      for (let i = 0; i < 15; i++) {
+        particles.push({
+          x: b.x, y: b.y,
+          vx: R(-120, 120), vy: R(-180, -60),
+          life: R(0.4, 0.8), t: 0,
+          color: '#ff4500', size: R(2, 4) * DPR
+        });
+      }
+    }
+  }
+
+  // 🔥 Crush mechanic
+  function checkCrush() {
+    for (const top of balls) {
+      if (top.asleep && !top.held) {
+        for (const bottom of balls) {
+          if (bottom.asleep || bottom.type === 'vetro' || bottom.held) continue;
+          if (top === bottom) continue;
+          const dy = bottom.y - top.y;
+          const dx = Math.abs(bottom.x - top.x);
+          if (dy > 0 && dy < 30 && dx < (top.r + bottom.r) * 0.6 && top.r > bottom.r + 8) {
+            floatText('CRUSH!', bottom.x, bottom.y);
+            balls = balls.filter(b => b !== bottom);
+            sfx('boing');
+            return;
+          }
+        }
+      }
+    }
+  }
 
   function update(dt) {
     if (paused || gameOver) return;
@@ -585,14 +845,15 @@
     G = BASE_G + (level - 1) * 100;
     gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10);
 
+    // Fisica: ignora palle tenute in mano
     for (const b of balls) {
-      if (b.asleep) continue;
+      if (b.asleep || b.held) continue;
       b.vy += G * dt;
       b.vx *= (1 - FRICTION);
       b.x += b.vx * dt;
       b.y += b.vy * dt;
 
-      // Collisioni con i bordi
+      // Muri
       if (b.x - b.r < 10) {
         b.x = 10 + b.r;
         b.vx = -b.vx * b.rest * 0.8;
@@ -627,14 +888,14 @@
       }
     }
 
-    // Effetto vortice
+    // Vortice
     if (vortexEffect) {
       vortexEffect.duration -= dt;
       if (vortexEffect.duration <= 0) {
         vortexEffect = null;
       } else {
         for (const b of balls) {
-          if (b.type === 'vortice') continue;
+          if (b.type === 'vortice' || b.held) continue;
           const dx = vortexEffect.x - b.x;
           const dy = vortexEffect.y - b.y;
           const dist = Math.hypot(dx, dy);
@@ -647,11 +908,12 @@
       }
     }
 
-    // Grid per collisioni
+    // Grid collision: escludi palle "held"
     const cell = 64;
     const grid = new Map();
     function key(i, j) { return `${i},${j}`; }
     for (const b of balls) {
+      if (b.held) continue;
       const i = Math.floor(b.x / cell), j = Math.floor(b.y / cell);
       for (let ii = i - 1; ii <= i + 1; ii++) {
         for (let jj = j - 1; jj <= j + 1; jj++) {
@@ -700,28 +962,41 @@
             A.asleep = B.asleep = false;
           }
 
+          // Merge / effetti speciali
           if (A.type === B.type && !A.merging && !B.merging && Math.hypot(rvx, rvy) < MERGE_SPEED_THRESHOLD) {
-            mergeBalls(A, B);
+            if (A.type === 'bomba') {
+              const x = (A.x + B.x) / 2;
+              const y = (A.y + B.y) / 2;
+              explode(x, y);
+            } else if (A.type === 'detonatrice') {
+              detonateAllBombs();
+              balls = balls.filter(b => b !== A && b !== B);
+            } else if (A.type === 'metal' || A.type === 'oro') {
+              // Non si fondono
+            } else {
+              mergeBalls(A, B);
+            }
           }
         }
       }
     }
 
     for (const b of balls) {
-      if (!b.asleep && Math.abs(b.vx) < 0.1 && Math.abs(b.vy) < 0.1) {
+      if (!b.asleep && !b.held && Math.abs(b.vx) < 0.1 && Math.abs(b.vy) < 0.1) {
         b.asleep = true;
       }
     }
 
-    // Controllo game over
+    // Game over: considera solo palle "ferme" e non "held"
     for (const b of balls) {
-      if (b.asleep && b.y - b.r < gameOverY) {
+      if (b.asleep && !b.held && b.y - b.r < gameOverY) {
         endGame();
         return;
       }
     }
 
-    // Aggiorna particelle
+    checkCrush();
+
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.t += dt;
@@ -740,8 +1015,11 @@
       bestScore = score;
       localStorage.setItem('ballDropBest', bestScore);
     }
+    const finalScoreEl = document.getElementById('finalScore');
+    const bestScoreEl = document.getElementById('bestScore');
     finalScoreEl.textContent = `PUNTEGGIO: ${score}`;
     bestScoreEl.textContent = `RECORD: ${bestScore}`;
+    const overEl = document.getElementById('gameOver');
     overEl.classList.remove('hidden');
     setTimeout(() => overEl.classList.add('visible'), 100);
   }
@@ -750,11 +1028,7 @@
     sfx('merge');
     spawnStars((A.x + B.x) / 2, (A.y + B.y) / 2);
 
-    if (A.type === 'bomba' || B.type === 'bomba') {
-      explode((A.x + B.x) / 2, (A.y + B.y) / 2);
-      balls = balls.filter(b => b !== A && b !== B);
-      return;
-    }
+    if (A.type === 'bomba' || B.type === 'bomba') return;
 
     const baseType = A.type;
     const idx = TYPES.indexOf(baseType);
@@ -764,6 +1038,7 @@
       addScore(SCORE_STEP[idx] * scoreBonus, (A.x + B.x) / 2, (A.y + B.y) / 2);
     }
 
+    A.merging = B.merging = true;
     const totalMass = A.m + B.m;
     const x = (A.x * A.m + B.x * B.m) / totalMass;
     const y = (A.y * A.m + B.y * B.m) / totalMass;
@@ -783,7 +1058,8 @@
       rest: REST[newType],
       squash: 0,
       merging: false,
-      asleep: false
+      asleep: false,
+      held: false
     };
     balls.push(C);
     if (!SPECIAL_TYPES.has(newType)) {
@@ -798,46 +1074,14 @@
     }
   }
 
-  function explode(x, y) {
-    sfx('boing');
-    floatText('BOOM!', x, y);
-    for (let i = 0; i < 20; i++) {
-      particles.push({
-        x, y,
-        vx: R(-200, 200),
-        vy: R(-250, -60),
-        life: R(0.5, 0.9),
-        t: 0,
-        color: ['#ff4500', '#ff8c00', '#ffd700'][Math.floor(R(0, 3))],
-        size: R(3, 6) * DPR
-      });
-    }
-    balls = balls.filter(b => {
-      const dist = Math.hypot(b.x - x, b.y - y);
-      if (dist < 80) {
-        for (let i = 0; i < 5; i++) {
-          particles.push({
-            x: b.x, y: b.y,
-            vx: R(-100, 100), vy: R(-150, 150),
-            life: R(0.3, 0.7), t: 0,
-            color: '#aaa', size: 2
-          });
-        }
-        return false;
-      }
-      return true;
-    });
-  }
-
   function draw() {
     ctx.save();
     ctx.fillStyle = grassPat;
     ctx.fillRect(0, 0, W, H);
 
-    // Zona pericolosa
+    // 🔴 Zona pericolosa in alto (usata per game over)
     ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
     ctx.fillRect(0, 0, W, gameOverY);
-
     ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -845,11 +1089,13 @@
     ctx.lineTo(W, gameOverY);
     ctx.stroke();
 
+    // Cornice
     ctx.strokeStyle = 'rgba(255,255,255,0.2)';
     ctx.lineWidth = 2;
     ctx.strokeRect(8, 8, W - 16, H - 16);
     ctx.restore();
 
+    // Palle
     for (const b of balls) {
       const spr = getSprite(b.type);
       const sx = spr.width / 2, sy = spr.height / 2;
@@ -865,7 +1111,7 @@
       b.squash *= 0.7;
     }
 
-    // Disegna vortice
+    // Vortice
     if (vortexEffect) {
       ctx.save();
       ctx.globalAlpha = 0.3;
@@ -879,7 +1125,7 @@
       ctx.restore();
     }
 
-    // Disegna particelle
+    // Particelle/Testi
     ctx.save();
     for (const p of particles) {
       const alpha = 1 - p.t / p.life;
@@ -917,6 +1163,50 @@
   }
 
   loop();
+
+  // 🔐 TRUCCHI
+  const CHEATS_ENABLED = true;
+  if (CHEATS_ENABLED) {
+    let cheatActive = false;
+    let cheatInput = '';
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        e.preventDefault();
+        cheatActive = true;
+        cheatInput = '';
+        alert('Trucchi attivati! Digita: score5000, level10, spawn oro, powerup fuoco, clear');
+        return;
+      }
+      if (!cheatActive) return;
+      if (e.key === 'Escape') { cheatActive = false; cheatInput = ''; return; }
+      if (e.key.length === 1) cheatInput += e.key;
+      else if (e.key === 'Enter') {
+        const cmd = cheatInput.trim().toLowerCase();
+        const commands = {
+          score5000: () => addScore(5000, W / 2, H / 2),
+          level10: () => {
+            level = 10;
+            G = BASE_G + (level - 1) * 100;
+            gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10);
+            levelEl.textContent = `LIVELLO ${level}`;
+            floatText('LIVELLO 10!', W / 2, H / 2);
+          },
+          'spawn bomba': () => spawnBall(R(80, W - 80), spawnY, 'bomba'),
+          'spawn oro': () => spawnBall(R(80, W - 80), spawnY, 'oro'),
+          'powerup jolly': () => { hasJolly = true; updatePowerupsUI(); },
+          'powerup fuoco': () => { hasFuoco = true; updatePowerupsUI(); },
+          clear: () => { balls = balls.filter(b => SPECIAL_TYPES.has(b.type)); }
+        };
+        if (commands[cmd]) {
+          commands[cmd]();
+          floatText('✅ TRUCCO!', W / 2, H / 2);
+          sfx('powerup');
+        } else if (cmd) floatText('❓ Sconosciuto', W / 2, H / 2);
+        cheatActive = false;
+        cheatInput = '';
+      }
+    });
+  }
 })();
 </script>
 </body>
