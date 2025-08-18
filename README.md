@@ -49,3 +49,8 @@ Il gioco è disponibile in prova su [https://theballdrop.netlify.app/](https://t
 ## Disclaimer
 
 Alcune parti del codice sorgente sono state realizzate mediante l'uso dell'Intelligenza Artificiale, gli effetti sonori sono stati reliazzati con il modello [_Sound Forge_](https://huggingface.co/spaces?q=ArcadiaAISoundForge)
+
+## Licenze
+
+- **Codice sorgente**: [MIT License](./LICENSE)
+- **Contenuti audio (soundtrack)**: [CC BY 4.0](./LICENSE_soundtrack)
