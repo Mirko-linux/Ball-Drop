@@ -1,0 +1,34 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.pnpm-debug.log
+
+# Capacitor / Android
+android/
+ios/
+.capacitor
+
+# Build files
+build/
+dist/
+out/
+*.apk
+*.aab
+*.ipa
+
+# IDE & editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Gradle
+.gradle/
+local.properties
+
+# Environment variables
+.env
+.env.local
