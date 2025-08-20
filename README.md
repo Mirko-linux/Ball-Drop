@@ -1,4 +1,7 @@
 <h1 align="center">Ball Drop</h1>
+<a href="https://mirkodonatogames.itch.io/ball-drop" target="_blank">
+  <img src="assets/badge_bw.png" alt="Logo Itch.io" width="200"/>
+</a>
 
 [![HTML](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
