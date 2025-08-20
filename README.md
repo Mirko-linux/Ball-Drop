@@ -53,7 +53,7 @@ Il gioco è disponibile in prova su [https://theballdrop.netlify.app/](https://t
 
 ## Disclaimer
 
-Alcune parti del codice sorgente sono state realizzate mediante l'uso dell'Intelligenza Artificiale, gli effetti sonori sono stati realizzati con il modello [_Sound Forge_](https://huggingface.co/spaces?q=ArcadiaAISoundForge)
+Alcune parti del codice sorgente sono state realizzate mediante l'uso dell'Intelligenza Artificiale, gli effetti sonori sono stati realizzati con il modello [_Sound Forge_](https://huggingface.co/spaces?q=ArcadiaAISoundForge), il codice sorgente è stato scritto dal modello [_Qwen_](https://chat.qwen.ai/) di Alibaba Cloud
 
 ## Licenze
 
