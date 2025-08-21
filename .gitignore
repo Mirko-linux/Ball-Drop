@@ -25,6 +25,9 @@ out/
 *.swo
 .DS_Store
 
+# cartelle con file non essenziali
+/public/
+
 # Gradle
 .gradle/
 local.properties
@@ -33,4 +36,5 @@ local.properties
 .env
 .env.local
 
+# Keystore (SOLO se il repo è pubblico)
 /key/my-release-key.jks
