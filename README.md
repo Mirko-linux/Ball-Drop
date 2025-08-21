@@ -49,7 +49,8 @@ Obiettivo: ottenere il punteggio più alto possibile!
 Il gioco è realizzato in un unico file HTML per semplicità e portabilità. Non richiede librerie esterne.
 
 ## Gioca ora
-Il gioco è disponibile in prova su [https://theballdrop.netlify.app/](https://theballdrop.netlify.app/). Prossimamente quando lo sviluppo sarà terminato verrà rilasciata sia una versione per mobile in alcuni store digitali android sia una versione online giocabile direttamente dal browser su [Itch.io](https://itch.io/) 
+
+Puoi giocare a Ball Drop scaricando l'apk direttamente da GitHub Realease [Link dell'ultima versione disponibile](https://github.com/Mirko-linux/Ball-Drop/releases/tag/Ball-Drop_1.5), in alternativa puoi giocare al gioco direttamente dal browser sulla pagina itch.io di Ball Drop
 
 ## Disclaimer
 
