@@ -1,7 +1,10 @@
 <h1 align="center">Ball Drop</h1>
-<p align="center">
+<p align="left">
+  <a href="https://flathub.org/apps/com.example.BallDrop" target="_blank" title="In arrivo su Flathub">
+    <img src="assets/badge.png" alt="Disponibile su Flathub" width="200"/>
+  </a>  
   <a href="https://mirkodonatogames.itch.io/ball-drop" target="_blank">
-    <img src="assets/badge_bw.png" alt="Logo Itch.io" width="200"/>
+    <img src="assets/badge_bw.png" alt="Disponibile su Itch.io" width="200"/>
   </a>
 </p>
 
