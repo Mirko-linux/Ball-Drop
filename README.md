@@ -14,7 +14,7 @@
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
 <p align="center">
-  <img src="Screenshot.png" width="300" alt="Ball Drop - Screenshot del gioco">
+  <img src="assets/Screenshot.png" width="300" alt="Ball Drop - Screenshot del gioco">
 </p>
 Ball Drop è un semplice videogioco open source di tipo Merge game, in cui devi far cadere palle sportive, unirle a coppie e farle evolvere da piccole a giganti! Più le unisci, più diventano grandi, più punti fai, ma occhio a non superare la linea rossa semmò game over.
 
