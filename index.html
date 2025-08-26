@@ -2,7 +2,9 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Ball Drop</title>
   <style>
     html, body { 
@@ -102,7 +104,6 @@
       transform: scale(1.05);
     }
 
-    /* HUD Potenziamenti */
     .powerups {
       display: flex;
       gap: 10px;
@@ -337,7 +338,7 @@
     bomba: 0.4, vetro: 0.9, vortice: 0.6, detonatrice: 0.7, metal: 0.3, oro: 0.2
   };
   const FRICTION = 0.004;
-  const MERGE_SPEED_THRESHOLD = 480;
+  const MERGE_SPEED_THRESHOLD = 100; // Più basso = solo da fermo
 
   // Meccaniche di livello
   let level = 1;
@@ -355,6 +356,12 @@
   const SPECIAL_TYPES = new Set(['bomba', 'vetro', 'vortice', 'detonatrice', 'metal', 'oro']);
   const SPECIAL_CHANCE = 0.1;
 
+  // Limiti
+  const MAX_BALLS = 30;
+  const MAX_PARTICLES = 100;
+  const DROP_COOLDOWN = 0.4;
+  let lastDropTime = 0;
+
   // Stato globale
   let balls = [];
   let paused = false;
@@ -371,12 +378,21 @@
 
   const R = (a, b) => a + Math.random() * (b - a);
 
-  // Colori
+  // Colori realistici
   const COLORS = {
-    golf: '#f5f5f5', pingpong: '#f8f8f8', squash: '#ffdd55', lacrosse: '#ffffff',
-    tennis: '#ccff33', baseball: '#f5f5dc', cricket: '#fffaf0', pallamano: '#f0e6d2',
-    pallavolo: '#ffffff', basket: '#e2720e', waterpolo: '#0077be', calcio: '#000000',
-    pallamedica: '#6a6a6a',
+    golf: '#f5f5f5',
+    pingpong: '#f0f0f0',
+    squash: '#e8c448',
+    lacrosse: '#ffffff',
+    tennis: '#ccff33',
+    baseball: '#f5f5dc',
+    cricket: '#fffaf0',
+    pallamano: '#f0e6d2',
+    pallavolo: '#ffffff',
+    basket: '#e2720e',
+    waterpolo: '#0077be',
+    calcio: '#ffffff',
+    pallamedica: '#ffffff',
     bomba: '#8b0000',
     vetro: '#ffffff',
     vortice: '#7b68ee',
@@ -384,6 +400,23 @@
     metal: '#a9a9a9',
     oro: '#ffd700'
   };
+
+  // Funzione helper per esagono (calcio)
+  function drawHex(cx, x, y, size) {
+    cx.save();
+    cx.translate(x, y);
+    cx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3;
+      const xx = Math.cos(angle) * size;
+      const yy = Math.sin(angle) * size;
+      if (i === 0) cx.moveTo(xx, yy);
+      else cx.lineTo(xx, yy);
+    }
+    cx.closePath();
+    cx.fill();
+    cx.restore();
+  }
 
   // Cache sprite
   const spriteCache = new Map();
@@ -398,6 +431,7 @@
 
     cx.beginPath();
     cx.arc(0, 0, r * DPR, 0, Math.PI * 2);
+
     if (type === 'vetro') {
       cx.globalAlpha = 0.2;
       cx.fillStyle = '#ffffff';
@@ -491,6 +525,159 @@
       }
     }
 
+    // Dettagli specifici per ogni palla
+    if (type === 'golf') {
+      cx.fillStyle = '#ffffff';
+      for (let i = 0; i < 20; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.random() * (r * 0.7 * DPR);
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        cx.beginPath();
+        cx.arc(x, y, 1.5 * DPR, 0, Math.PI * 2);
+        cx.fill();
+      }
+    }
+    else if (type === 'tennis') {
+      cx.strokeStyle = '#ffeb3b';
+      cx.lineWidth = 2.5 * DPR;
+      cx.beginPath();
+      cx.ellipse(0, 0, r * 0.8 * DPR, r * 0.4 * DPR, 0, 0, Math.PI * 2);
+      cx.stroke();
+      cx.beginPath();
+      cx.ellipse(0, 0, r * 0.8 * DPR, r * 0.4 * DPR, Math.PI / 2, 0, Math.PI * 2);
+      cx.stroke();
+    }
+    else if (type === 'calcio') {
+      cx.fillStyle = '#000000';
+      for (let i = 0; i < 6; i++) {
+        const angle = (i * Math.PI) / 3;
+        const x = Math.cos(angle) * (r * 0.6 * DPR);
+        const y = Math.sin(angle) * (r * 0.6 * DPR);
+        drawHex(cx, x, y, 6 * DPR);
+      }
+      cx.fillStyle = '#ffffff';
+      cx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const a = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+        const radius = i % 2 === 0 ? r * 0.4 * DPR : r * 0.25 * DPR;
+        const x = Math.cos(a) * radius;
+        const y = Math.sin(a) * radius;
+        if (i === 0) cx.moveTo(x, y);
+        else cx.lineTo(x, y);
+      }
+      cx.closePath();
+      cx.fill();
+    }
+    else if (type === 'basket') {
+      cx.strokeStyle = '#ffffff';
+      cx.lineWidth = 1.5 * DPR;
+      cx.beginPath();
+      cx.ellipse(0, 0, r * 0.9 * DPR, r * 0.2 * DPR, 0, 0, Math.PI * 2);
+      cx.stroke();
+      cx.beginPath();
+      cx.ellipse(0, 0, r * 0.9 * DPR, r * 0.2 * DPR, Math.PI / 2, 0, Math.PI * 2);
+      cx.stroke();
+      for (let i = 0; i < 4; i++) {
+        const a = (i * Math.PI) / 2;
+        cx.beginPath();
+        for (let t = 0; t < Math.PI * 2; t += 0.01) {
+          const x = Math.cos(t) * r * DPR;
+          const y = Math.sin(t) * r * DPR * 0.3;
+          const rx = x * Math.cos(a) - y * Math.sin(a);
+          const ry = x * Math.sin(a) + y * Math.cos(a);
+          if (t === 0) cx.moveTo(rx, ry);
+          else cx.lineTo(rx, ry);
+        }
+        cx.stroke();
+      }
+    }
+    else if (type === 'baseball') {
+      cx.strokeStyle = '#ffffff';
+      cx.lineWidth = 2 * DPR;
+      cx.lineCap = 'round';
+      cx.beginPath();
+      cx.ellipse(0, 0, r * 0.8 * DPR, r * 0.3 * DPR, Math.PI / 4, 0, Math.PI * 2);
+      cx.stroke();
+      cx.beginPath();
+      cx.ellipse(0, 0, r * 0.8 * DPR, r * 0.3 * DPR, -Math.PI / 4, 0, Math.PI * 2);
+      cx.stroke();
+    }
+    else if (type === 'pingpong') {
+      cx.strokeStyle = '#cc0000';
+      cx.lineWidth = 3 * DPR;
+      cx.beginPath();
+      cx.ellipse(0, 0, r * 0.9 * DPR, r * 0.4 * DPR, 0, 0, Math.PI * 2);
+      cx.stroke();
+    }
+    else if (type === 'squash') {
+      cx.fillStyle = '#000000';
+      cx.beginPath();
+      cx.arc(0, 0, 3 * DPR, 0, Math.PI * 2);
+      cx.fill();
+    }
+    else if (type === 'pallavolo') {
+      cx.strokeStyle = '#ffffff';
+      cx.lineWidth = 2 * DPR;
+      for (let i = 0; i < 3; i++) {
+        const a = (i * Math.PI) / 3;
+        cx.beginPath();
+        cx.ellipse(0, 0, r * 0.85 * DPR, r * 0.25 * DPR, a, 0, Math.PI * 2);
+        cx.stroke();
+      }
+    }
+    else if (type === 'lacrosse') {
+      cx.strokeStyle = '#ffffff';
+      cx.lineWidth = 1 * DPR;
+      for (let i = -2; i <= 2; i++) {
+        const y = i * (r * 0.4 * DPR);
+        cx.beginPath();
+        cx.moveTo(-r * DPR, y);
+        cx.lineTo(r * DPR, y);
+        cx.stroke();
+      }
+      for (let i = -2; i <= 2; i++) {
+        const x = i * (r * 0.4 * DPR);
+        cx.beginPath();
+        cx.moveTo(x, -r * DPR);
+        cx.lineTo(x, r * DPR);
+        cx.stroke();
+      }
+    }
+    else if (type === 'waterpolo') {
+      cx.strokeStyle = '#ffffff';
+      cx.lineWidth = 3 * DPR;
+      cx.lineCap = 'round';
+      cx.beginPath();
+      cx.moveTo(0, -r * 0.8 * DPR);
+      cx.lineTo(0, r * 0.8 * DPR);
+      cx.stroke();
+      cx.beginPath();
+      cx.moveTo(-r * 0.8 * DPR, 0);
+      cx.lineTo(r * 0.8 * DPR, 0);
+      cx.stroke();
+    }
+    else if (type === 'cricket') {
+      cx.strokeStyle = '#ffffff';
+      cx.lineWidth = 2 * DPR;
+      cx.lineCap = 'round';
+      cx.beginPath();
+      cx.ellipse(0, 0, r * 0.9 * DPR, r * 0.3 * DPR, 0, 0, Math.PI * 2);
+      cx.stroke();
+      for (let i = 0; i < 5; i++) {
+        const x = (i - 2) * 8 * DPR;
+        cx.beginPath();
+        cx.moveTo(x, -2 * DPR);
+        cx.lineTo(x, 2 * DPR);
+        cx.stroke();
+      }
+    }
+    else if (type === 'pallamedica') {
+      cx.fillStyle = '#ff0000';
+      cx.fillRect(-r * 0.15 * DPR, -r * 0.4 * DPR, r * 0.3 * DPR, r * 0.8 * DPR);
+      cx.fillRect(-r * 0.4 * DPR, -r * 0.15 * DPR, r * 0.8 * DPR, r * 0.3 * DPR);
+    }
+
     spriteCache.set(type, c);
     return c;
   }
@@ -576,38 +763,58 @@
   }
 
   // Audio
-  const Audio = new (window.AudioContext || window.webkitAudioContext)();
-  let musicPlaying = false;
+  let AudioContext = window.AudioContext || window.webkitAudioContext;
+  let Audio = null;
+  let musicPlaying = true;
 
-  function sfx(kind) {
-    if (!musicPlaying) return;
-    const g = Audio.createGain();
-    g.connect(Audio.destination);
-    g.gain.value = 0.15;
-    const o = Audio.createOscillator();
-    o.connect(g);
-    const now = Audio.currentTime;
-
-    switch (kind) {
-      case 'tink': o.type = 'sine'; o.frequency.setValueAtTime(700, now); o.frequency.exponentialRampToValueAtTime(500, now + 0.1); break;
-      case 'boing': o.type = 'triangle'; o.frequency.setValueAtTime(200, now); o.frequency.exponentialRampToValueAtTime(150, now + 0.15); break;
-      case 'merge': o.type = 'sawtooth'; o.frequency.setValueAtTime(400, now); o.frequency.exponentialRampToValueAtTime(250, now + 0.2); break;
-      case 'powerup': o.type = 'square'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(600, now + 0.15); break;
+  function initAudio() {
+    if (!Audio) {
+      Audio = new AudioContext();
     }
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(0.3, now + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
-    o.start(now);
-    o.stop(now + 0.26);
   }
 
-  // 🔁 NUOVO SISTEMA DI DROP: tieni, sposta orizzontalmente nella fascia alta, rilascia per far cadere
+  function sfx(kind) {
+    if (!musicPlaying || !Audio) return;
+    try {
+      const g = Audio.createGain();
+      g.connect(Audio.destination);
+      g.gain.value = 0.15;
+      const o = Audio.createOscillator();
+      o.connect(g);
+      const now = Audio.currentTime;
+
+      switch (kind) {
+        case 'tink': o.type = 'sine'; o.frequency.setValueAtTime(700, now); o.frequency.exponentialRampToValueAtTime(500, now + 0.1); break;
+        case 'boing': o.type = 'triangle'; o.frequency.setValueAtTime(200, now); o.frequency.exponentialRampToValueAtTime(150, now + 0.15); break;
+        case 'merge': o.type = 'sawtooth'; o.frequency.setValueAtTime(400, now); o.frequency.exponentialRampToValueAtTime(250, now + 0.2); break;
+        case 'powerup': o.type = 'square'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(600, now + 0.15); break;
+      }
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.3, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+      o.start(now);
+      o.stop(now + 0.26);
+    } catch (e) {}
+  }
+
+  // Attiva audio al primo tocco
+  document.addEventListener('touchstart', initAudio, { once: true });
+  document.addEventListener('click', initAudio, { once: true });
+
+  // 🔁 SISTEMA DI DROP CON ANTI-SPAM
   let heldBall = null;
   let isDragging = false;
+  let currentPointerId = null;
 
   canvas.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
     if (gameOver || paused || isDragging) return;
+
+    const now = performance.now() / 1000;
+    if (now - lastDropTime < DROP_COOLDOWN) {
+      floatText('Aspetta!', W / 2, H / 2);
+      sfx('tink');
+      return;
+    }
 
     const rect = canvas.getBoundingClientRect();
     let x = (e.clientX - rect.left) / rect.width * W;
@@ -624,23 +831,23 @@
       type = TYPES[Math.floor(R(0, Math.min(highestTypeIndex + 1, 5)))];
     }
 
+    if (balls.length >= MAX_BALLS) return;
+
     heldBall = spawnBall(x, spawnY, type);
+    if (!heldBall) return;
+
     heldBall.vx = 0;
     heldBall.vy = 0;
     heldBall.held = true;
     isDragging = true;
-
+    currentPointerId = e.pointerId;
     canvas.setPointerCapture(e.pointerId);
 
     floatText('PRONTO', x, spawnY - 20);
     sfx('tink');
-
-    if (balls.length > 6) {
-      hintEl.classList.remove('show');
-    }
+    lastDropTime = now;
 
     const moveHandler = (ev) => {
-      ev.preventDefault();
       if (!isDragging || !heldBall) return;
       const r = canvas.getBoundingClientRect();
       const newX = (ev.clientX - r.left) / r.width * W;
@@ -651,15 +858,18 @@
     };
 
     const upHandler = (ev) => {
-      ev.preventDefault();
       if (isDragging && heldBall) {
         heldBall.held = false;
         heldBall.asleep = false;
       }
       isDragging = false;
       heldBall = null;
-      canvas.releasePointerCapture(ev.pointerId);
-
+      if (currentPointerId !== null) {
+        try {
+          canvas.releasePointerCapture(currentPointerId);
+        } catch (e) {}
+        currentPointerId = null;
+      }
       document.removeEventListener('pointermove', moveHandler);
       document.removeEventListener('pointerup', upHandler);
       document.removeEventListener('pointercancel', upHandler);
@@ -682,7 +892,6 @@
     if (paused) sfx('boing');
   });
 
-  // 🔒 Inventario
   inventoryBtn.addEventListener('click', () => {
     if (hasFuoco) {
       floatText('FUOCO!', W / 2, H / 2);
@@ -707,39 +916,62 @@
     updatePowerupsUI();
   });
 
-  restartBtn.addEventListener('click', () => {
-    document.location.reload();
-  });
+  restartBtn.addEventListener('click', resetGame);
 
-  // Fisica
-  const dtFixed = 1 / 120;
-  let acc = 0;
-  let last = performance.now();
-function spawnBall(x, y, type) {
-  const r = RADII[type];
-  const m = MASSE[type];
-  const b = {
-    id: Math.random().toString(36).slice(2),
-    type,
-    x,
-    y,
-    vx: R(-5, 5),     // movimento leggero per evitare incastramenti
-    vy: 1,            // forza a muoversi verso il basso
-    r,
-    m,
-    rest: REST[type],
-    squash: 0,
-    merging: false,
-    asleep: false,
-    held: false
-  };
-  balls.push(b);
-  if (!SPECIAL_TYPES.has(type)) {
-    highestTypeIndex = Math.max(highestTypeIndex, TYPES.indexOf(type));
+  // Reset pulito
+  function resetGame() {
+    balls = [];
+    particles = [];
+    score = 0;
+    level = 1;
+    highestTypeIndex = 0;
+    paused = false;
+    gameOver = false;
+    vortexEffect = null;
+    hasJolly = false;
+    hasFuoco = false;
+    heldPowerup = null;
+
+    scoreEl.textContent = fmt(0);
+    levelEl.textContent = `LIVELLO ${level}`;
+    updatePowerupsUI();
+    redrawNext();
+
+    for (let i = 0; i < 4; i++) {
+      spawnBall(R(80, W - 80), R(100, 200), 'golf');
+    }
+
+    overEl.classList.remove('visible');
+    setTimeout(() => overEl.classList.add('hidden'), 300);
   }
-  redrawNext();
-  return b;
-}
+
+  function spawnBall(x, y, type) {
+    if (balls.length >= MAX_BALLS) return null;
+    const r = RADII[type];
+    const m = MASSE[type];
+    const b = {
+      id: Math.random().toString(36).slice(2),
+      type,
+      x,
+      y,
+      vx: R(-5, 5),
+      vy: 1,
+      r,
+      m,
+      rest: REST[type],
+      squash: 0,
+      merging: false,
+      asleep: false,
+      held: false
+    };
+    balls.push(b);
+    if (!SPECIAL_TYPES.has(type)) {
+      highestTypeIndex = Math.max(highestTypeIndex, TYPES.indexOf(type));
+    }
+    redrawNext();
+    return b;
+  }
+
   function redrawNext() {
     nextCtx.clearRect(0, 0, nextIcon.width, nextIcon.height);
     const idx = Math.min(highestTypeIndex + 1, TYPES.length - 1);
@@ -759,7 +991,12 @@ function spawnBall(x, y, type) {
   levelEl.textContent = `LIVELLO ${level}`;
   updatePowerupsUI();
 
-  // 🔥 Bomba distrugge metallo e oro
+  // Pre-carica tutti gli sprite
+  for (const type of TYPES) {
+    getSprite(type);
+  }
+
+  // 🔥 Bomba
   function explode(x, y) {
     sfx('boing');
     floatText('BOOM!', x, y);
@@ -794,14 +1031,6 @@ function spawnBall(x, y, type) {
           }
           sfx('powerup');
         }
-        for (let i = 0; i < 5; i++) {
-          particles.push({
-            x: b.x, y: b.y,
-            vx: R(-100, 100), vy: R(-150, 150),
-            life: R(0.3, 0.7), t: 0,
-            color: '#aaa', size: 2
-          });
-        }
       } else {
         newBalls.push(b);
       }
@@ -810,7 +1039,6 @@ function spawnBall(x, y, type) {
     updatePowerupsUI();
   }
 
-  // 🔥 Detona tutte le bombe
   function detonateAllBombs() {
     sfx('boing');
     floatText('DETONATE!', W / 2, H / 2);
@@ -831,7 +1059,6 @@ function spawnBall(x, y, type) {
     }
   }
 
-  // 🔥 Crush mechanic
   function checkCrush() {
     for (const top of balls) {
       if (top.asleep && !top.held) {
@@ -857,7 +1084,7 @@ function spawnBall(x, y, type) {
     G = BASE_G + (level - 1) * 100;
     gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10);
 
-    // Fisica precisa con timestep fisso
+    // Fisica
     for (const b of balls) {
       if (b.asleep || b.held) continue;
       b.vy += G * dt;
@@ -878,22 +1105,6 @@ function spawnBall(x, y, type) {
         b.y = H - 10 - b.r;
         const effectiveRest = Math.max(0.2, b.rest - (level - 1) * 0.04);
         b.vy = -Math.abs(b.vy) * effectiveRest;
-
-        if (b.type === 'vetro' && Math.abs(b.vy) < 30) {
-          floatText('SHATTER!', b.x, b.y);
-          sfx('boing');
-          for (let i = 0; i < 10; i++) {
-            particles.push({
-              x: b.x, y: b.y,
-              vx: R(-100, 100), vy: R(-150, 150),
-              life: R(0.3, 0.7), t: 0,
-              color: '#fff', size: R(2, 4)
-            });
-          }
-          balls = balls.filter(ball => ball !== b);
-          continue;
-        }
-
         if (Math.abs(b.vy) < 15) b.vy = 0;
         if (Math.abs(b.vx) < 20) b.vx *= 0.95;
         if (Math.abs(b.vy) < 10 && Math.abs(b.vx) < 8) b.asleep = true;
@@ -963,7 +1174,7 @@ function spawnBall(x, y, type) {
           const rvx = B.vx - A.vx, rvy = B.vy - A.vy;
           const velAlongNormal = rvx * nx + rvy * ny;
           if (velAlongNormal < 0) {
-            const e = Math.min(A.rest, B.rest) * 1.1; // 🔥 Rimbalzo più forte
+            const e = Math.min(A.rest, B.rest) * 1.1;
             const j = -(1 + e) * velAlongNormal / (1 / A.m + 1 / B.m);
             const impX = j * nx, impY = j * ny;
             A.vx -= impX / A.m;
@@ -974,28 +1185,20 @@ function spawnBall(x, y, type) {
             A.asleep = B.asleep = false;
           }
 
-          // Merge / effetti speciali
-          if (A.type === B.type && !A.merging && !B.merging && Math.hypot(rvx, rvy) < MERGE_SPEED_THRESHOLD) {
+          // Merge
+          if (A.type === B.type && !A.merging && !B.merging && Math.hypot(rvx, rvy) < MERGE_SPEED_THRESHOLD && A.held === B.held) {
             if (A.type === 'bomba') {
-              const x = (A.x + B.x) / 2;
-              const y = (A.y + B.y) / 2;
-              explode(x, y);
+              explode((A.x + B.x) / 2, (A.y + B.y) / 2);
             } else if (A.type === 'detonatrice') {
               detonateAllBombs();
               balls = balls.filter(b => b !== A && b !== B);
             } else if (A.type === 'metal' || A.type === 'oro') {
-              // Non si fondono
+              // No merge
             } else {
               mergeBalls(A, B);
             }
           }
         }
-      }
-    }
-
-    for (const b of balls) {
-      if (!b.asleep && !b.held && Math.abs(b.vx) < 0.1 && Math.abs(b.vy) < 0.1) {
-        b.asleep = true;
       }
     }
 
@@ -1009,6 +1212,7 @@ function spawnBall(x, y, type) {
 
     checkCrush();
 
+    // Particelle
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.t += dt;
@@ -1017,6 +1221,7 @@ function spawnBall(x, y, type) {
       p.vy += 600 * dt;
       if (p.type === 'star') p.rotation += 0.2;
       if (p.t > p.life) particles.splice(i, 1);
+      if (particles.length > MAX_PARTICLES) particles.splice(0, particles.length - MAX_PARTICLES);
     }
   }
 
@@ -1036,8 +1241,6 @@ function spawnBall(x, y, type) {
   function mergeBalls(A, B) {
     sfx('merge');
     spawnStars((A.x + B.x) / 2, (A.y + B.y) / 2);
-
-    if (A.type === 'bomba' || B.type === 'bomba') return;
 
     const baseType = A.type;
     const idx = TYPES.indexOf(baseType);
@@ -1088,7 +1291,6 @@ function spawnBall(x, y, type) {
     ctx.fillStyle = grassPat;
     ctx.fillRect(0, 0, W, H);
 
-    // 🔴 Zona pericolosa in alto
     ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
     ctx.fillRect(0, 0, W, gameOverY);
     ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
@@ -1098,14 +1300,13 @@ function spawnBall(x, y, type) {
     ctx.lineTo(W, gameOverY);
     ctx.stroke();
 
-    // Cornice
     ctx.strokeStyle = 'rgba(255,255,255,0.2)';
     ctx.lineWidth = 2;
     ctx.strokeRect(8, 8, W - 16, H - 16);
     ctx.restore();
 
-    // Palle
-    for (const b of balls) {
+    const sortedBalls = [...balls].sort((a, b) => a.y - b.y);
+    for (const b of sortedBalls) {
       const spr = getSprite(b.type);
       const sx = spr.width / 2, sy = spr.height / 2;
       const squ = 1 - Math.min(0.3, b.squash * 0.3);
@@ -1120,7 +1321,6 @@ function spawnBall(x, y, type) {
       b.squash *= 0.7;
     }
 
-    // Vortice
     if (vortexEffect) {
       ctx.save();
       ctx.globalAlpha = 0.3;
@@ -1134,7 +1334,6 @@ function spawnBall(x, y, type) {
       ctx.restore();
     }
 
-    // Particelle/Testi
     ctx.save();
     for (const p of particles) {
       const alpha = 1 - p.t / p.life;
@@ -1156,14 +1355,17 @@ function spawnBall(x, y, type) {
     ctx.globalAlpha = 1;
   }
 
+  let acc = 0;
+  let last = performance.now();
+  const dtFixed = 1 / 120;
   function loop() {
     const now = performance.now();
     let dt = (now - last) / 1000;
     last = now;
-    if (dt > 0.1) dt = 0.1;
+    if (dt > 0.2) dt = 0.1;
 
     acc += dt;
-    while (acc >= dtFixed) {
+    while (acc >= dtFixed && !paused && !gameOver) {
       update(dtFixed);
       acc -= dtFixed;
     }
@@ -1173,49 +1375,6 @@ function spawnBall(x, y, type) {
 
   loop();
 
-  // 🔐 TRUCCHI
-  const CHEATS_ENABLED = true;
-  if (CHEATS_ENABLED) {
-    let cheatActive = false;
-    let cheatInput = '';
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'C') {
-        e.preventDefault();
-        cheatActive = true;
-        cheatInput = '';
-        alert('Trucchi attivati! Digita: score5000, level10, spawn oro, powerup fuoco, clear');
-        return;
-      }
-      if (!cheatActive) return;
-      if (e.key === 'Escape') { cheatActive = false; cheatInput = ''; return; }
-      if (e.key.length === 1) cheatInput += e.key;
-      else if (e.key === 'Enter') {
-        const cmd = cheatInput.trim().toLowerCase();
-        const commands = {
-          score5000: () => addScore(5000, W / 2, H / 2),
-          level10: () => {
-            level = 10;
-            G = BASE_G + (level - 1) * 100;
-            gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10);
-            levelEl.textContent = `LIVELLO ${level}`;
-            floatText('LIVELLO 10!', W / 2, H / 2);
-          },
-          'spawn bomba': () => spawnBall(R(80, W - 80), spawnY, 'bomba'),
-          'spawn oro': () => spawnBall(R(80, W - 80), spawnY, 'oro'),
-          'powerup jolly': () => { hasJolly = true; updatePowerupsUI(); },
-          'powerup fuoco': () => { hasFuoco = true; updatePowerupsUI(); },
-          clear: () => { balls = balls.filter(b => SPECIAL_TYPES.has(b.type)); }
-        };
-        if (commands[cmd]) {
-          commands[cmd]();
-          floatText('✅ TRUCCO!', W / 2, H / 2);
-          sfx('powerup');
-        } else if (cmd) floatText('❓ Sconosciuto', W / 2, H / 2);
-        cheatActive = false;
-        cheatInput = '';
-      }
-    });
-  }
 })();
 </script>
 </body>
