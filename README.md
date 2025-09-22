@@ -55,7 +55,7 @@ Il gioco è realizzato in un unico file HTML per semplicità e portabilità. Non
 
 ## Gioca ora
 
-Puoi giocare a Ball Drop scaricando l'apk direttamente da GitHub Releases [Link dell'ultima versione disponibile](https://github.com/Mirko-linux/Ball-Drop/releases/tag/Ball-Drop_1.5), in alternativa puoi giocare al gioco direttamente dal browser sulla pagina itch.io di Ball Drop
+Puoi giocare a Ball Drop scaricando l'apk direttamente da GitHub Releases [Link dell'ultima versione disponibile](https://github.com/Mirko-linux/Ball-Drop/releases/tag/Ball-Drop_1.5), in alternativa puoi giocare al gioco direttamente dal browser sulla pagina itch.io di Ball Drop [Link della pagina di Itch.io](https://mirkodonatogames.itch.io/ball-drop)
 
 ## Disclaimer
 
