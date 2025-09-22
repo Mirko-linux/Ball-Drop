@@ -16,7 +16,7 @@
 <p align="center">
   <img src="assets/Screenshot.png" width="300" alt="Ball Drop - Screenshot del gioco">
 </p>
-Ball Drop è un semplice videogioco open source di tipo Merge game, in cui devi far cadere palle sportive, unirle a coppie e farle evolvere da piccole a giganti! Più le unisci, più diventano grandi, più punti fai, ma occhio a non superare la linea rossa semmò game over.
+Ball Drop è un semplice videogioco open source di tipo Merge game, in cui devi far cadere palle sportive, unirle a coppie e farle evolvere da piccole a giganti! Più le unisci, più diventano grandi, più punti fai, ma occhio a non superare la linea rossa senn game over.
 
 
 ## Funzionamento  
@@ -55,7 +55,7 @@ Il gioco è realizzato in un unico file HTML per semplicità e portabilità. Non
 
 ## Gioca ora
 
-Puoi giocare a Ball Drop scaricando l'apk direttamente da GitHub Realease [Link dell'ultima versione disponibile](https://github.com/Mirko-linux/Ball-Drop/releases/tag/Ball-Drop_1.5), in alternativa puoi giocare al gioco direttamente dal browser sulla pagina itch.io di Ball Drop
+Puoi giocare a Ball Drop scaricando l'apk direttamente da GitHub Releases [Link dell'ultima versione disponibile](https://github.com/Mirko-linux/Ball-Drop/releases/tag/Ball-Drop_1.5), in alternativa puoi giocare al gioco direttamente dal browser sulla pagina itch.io di Ball Drop
 
 ## Disclaimer
 
@@ -64,4 +64,4 @@ Alcune parti del codice sorgente sono state realizzate mediante l'uso dell'Intel
 ## Licenze
 
 - **Codice sorgente**: [MIT License](./LICENSE)
-- **Contenuti audio (soundtrack)**: [CC BY 4.0](./LICENSE_soundtrack)
+- **Contenuti (soundtrack)**: [CC BY 4.0](./LICENSE-CC-BY)
