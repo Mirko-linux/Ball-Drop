@@ -16,7 +16,7 @@
 <p align="center">
   <img src="assets/Screenshot.png" width="300" alt="Ball Drop - Screenshot del gioco">
 </p>
-Ball Drop è un semplice videogioco open source di tipo Merge game, in cui devi far cadere palle sportive, unirle a coppie e farle evolvere da piccole a giganti! Più le unisci, più diventano grandi, più punti fai, ma occhio a non superare la linea rossa senn game over.
+Ball Drop è un semplice videogioco open source di tipo Merge game, in cui devi far cadere palle sportive, unirle a coppie e farle evolvere da piccole a giganti! Più le unisci, più diventano grandi, più punti fai, ma occhio a non superare la linea rossa sennò game over.
 
 
 ## Funzionamento  
@@ -34,9 +34,16 @@ Il gioco include palle speciali che aggiungono strategia e varietà:
 - Bomba: non si fonde, ma esplode distruggendo le palle vicine  
 - Palla di Vetro: dà il triplo dei punti quando si fonde, ma, essendo fatta di vetro, si rompe se tocca terra  
 - Palla Vortice: attira le palle vicine per 2 secondi dopo il merge
-- Detonatore: come con la bomba, se collide con un altro detonatore, fa scoppiare tutte le bombe-
+- Detonatore: come con la bomba, se collide con un altro detonatore, fa scoppiare tutte le bombe
+- Palla di metallo: palla rara, non si fonde e si distrugge solo con la bomba. Dopo l'esplosione rilascia un "Jolly"
+- Palla d'oro simile alla palla di metallo ma più rara. Dopo l'esplosione rilascia o un "Jolly" o il "Fuoco"
 
 Queste palle appaiono casualmente una volta raggiunto un certo livello.
+
+Oltre a queste esistono anche due power up, ovvero:
+
+- Jolly: diventa una palla a scelta del giocatore può diventare sia una palla semplice che una palla speciale (esclusa quella d'oro)
+- Fuoco: Distrugge **tutte** le palle presenti
 
 ### Come giocare  
 1. Clicca o tocca lo schermo per far cadere una palla  
@@ -59,9 +66,7 @@ Puoi giocare a Ball Drop scaricando l'apk direttamente da GitHub Releases [Link 
 
 ## Disclaimer
 
-Alcune parti del codice sorgente sono state realizzate mediante l'uso dell'Intelligenza Artificiale, gli effetti sonori sono stati realizzati con il modello [_Sound Forge_](https://huggingface.co/spaces?q=ArcadiaAISoundForge), il codice sorgente è stato scritto dal modello [_Qwen_](https://chat.qwen.ai/) di Alibaba Cloud
+Alcune parti del codice sorgente sono state realizzate mediante l'uso dell'Intelligenza Artificiale, gli effetti sonori sono stati realizzati con il modello [_Sound Forge_](huggingface.co/spaces/mirkodonato08/arcadiaai-soundforge), il codice sorgente è stato scritto dal modello [_Qwen_](https://chat.qwen.ai/) di Alibaba Cloud
 
 ## Licenze
-
-- **Codice sorgente**: [MIT License](./LICENSE)
-- **Contenuti (soundtrack)**: [CC BY 4.0](./LICENSE-CC-BY)
+Il codice sorgente di Ball Drop è rilasciato sotto la [Licenza MIT](./LICENSE), tutti gli assets usati e la colonna sonora sono rilasciati sotto la licenza [CC BY 4.0](./LICENSE-CC-BY) eccetto i badge dei vari store i cui diritti rimangono a loro
