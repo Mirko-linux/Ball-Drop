@@ -8,5 +8,3 @@ Ball Drop è distribuito tramite F-Arcade, una repository sovrana per giochi mod
 3. Inserisci: `https://mirko-linux.github.io/F-Arcade/repo/`
 4. Aggiorna e cerca “Ball Drop”
 5. Installa e gioca in libertà!
-
-Distribuito sotto licenza MIT, con asset remixabili e badge etici.
