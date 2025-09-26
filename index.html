@@ -21,7 +21,8 @@
       display: flex; 
       flex-direction: column; 
     }
-
+    /* nasconde elementi con classe .hidden */
+    .hidden { display: none !important; }
     /* === MENU SYSTEM === */
     #menu-overlay {
       position: fixed;
@@ -35,18 +36,15 @@
       align-items: center;
       padding: 20px;
     }
-
     .menu-screen {
       display: none;
       text-align: center;
       max-width: 400px;
       width: 90%;
     }
-
     .menu-screen.active {
       display: block;
     }
-
     .menu-title {
       font-size: 36px;
       font-weight: 900;
@@ -55,7 +53,6 @@
       text-shadow: 0 0 10px rgba(160, 255, 120, 0.5);
       letter-spacing: 1px;
     }
-
     .menu-btn {
       display: block;
       width: 100%;
@@ -75,20 +72,17 @@
       background: rgba(160, 255, 120, 0.3);
       transform: translateY(-2px);
     }
-
     .menu-back {
       margin-top: 25px;
       background: rgba(255, 255, 255, 0.1);
       font-size: 16px;
     }
-
     .credits-text {
       color: #c0e0c0;
       line-height: 1.6;
       margin: 20px 0;
       font-size: 14px;
     }
-
     .settings-row {
       display: flex;
       justify-content: space-between;
@@ -97,7 +91,6 @@
       color: #d0f0d0;
       font-size: 15px;
     }
-
     .toggle-btn {
       padding: 8px 16px;
       border-radius: 10px;
@@ -108,7 +101,6 @@
       cursor: pointer;
     }
     .toggle-btn.off { background: #f44336; }
-
     /* === HUD (nascosto all'avvio) === */
     .hud { 
       position: fixed; 
@@ -116,7 +108,7 @@
       left: 0; 
       right: 0; 
       height: 80px; 
-      display: none; /* 👈 NASCOSTO FINO AL GIOCO */
+      display: none;
       align-items: center; 
       justify-content: space-between;
       padding: 12px 16px; 
@@ -129,7 +121,6 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
     .hud.visible { display: flex; }
-
     .score { 
       font-weight: 900; 
       font-size: 22px; 
@@ -193,7 +184,6 @@
       background: rgba(255, 255, 255, 0.2); 
       transform: scale(1.05);
     }
-
     .powerups {
       display: flex;
       gap: 10px;
@@ -216,7 +206,6 @@
     }
     .jolly-icon { background: #ffd700; border: 1px solid #ff9900; }
     .fuoco-icon { background: #ff4500; }
-
     #wrap { 
       position: relative; 
       flex: 1; 
@@ -236,8 +225,8 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
       border: 2px solid rgba(100, 200, 100, 0.2);
       touch-action: none;
+      display: block;
     }
-
     .center { 
       position: absolute; 
       inset: 0; 
@@ -247,7 +236,7 @@
       pointer-events: none; 
     }
     .overlay { 
-      display: flex; 
+      display: flex;
       flex-direction: column; 
       align-items: center; 
       gap: 20px; 
@@ -295,7 +284,6 @@
       background: #c1121f; 
       transform: translateY(-2px);
     }
-
     .hint { 
       position: fixed; 
       bottom: 16px; 
@@ -317,12 +305,185 @@
       transform: translateX(-50%) translateY(0);
     }
 
+    /* === PAUSE MENU === */
+/* --- Sostituisci il blocco #pauseMenu esistente con questo --- */
+#pauseMenu {
+  position: fixed;
+  inset: 0; /* prende tutto lo schermo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* sfondo leggermente trasparente + blur */
+  background: rgba(5, 30, 10, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  /* IMPORTANT: sopra gli altri overlay/hud */
+  z-index: 260;
+
+  /* inizialmente nascosto via opacity/pointer (non usando display:none
+     così le transizioni funzionano bene) */
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.98);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+/* quando mostriamo il menu: diventa cliccabile e visibile */
+#pauseMenu.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+/* quando è nascosto (forza stato nascosto) */
+#pauseMenu.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.98);
+}
+
+    .pause-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 20px;
+      border-radius: 16px;
+      background: #4e342e;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      width: 80%;
+      max-width: 300px;
+      position: relative;
+    }
+    .pause-title {
+      font-size: 28px;
+      font-weight: 900;
+      color: #ffeb3b;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      letter-spacing: 1px;
+      margin: 0 0 15px;
+    }
+    .pause-btn {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 5px 0;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ffca28, #ffb300);
+      color: #4e342e;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+      text-transform: uppercase;
+      font-size: 16px;
+    }
+    .pause-btn:hover {
+      background: linear-gradient(135deg, #ffd54f, #ffc107);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    }
+    .pause-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #ff5722;
+      color: white;
+      font-size: 20px;
+      line-height: 30px;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .pause-close:hover {
+      background: #ff4500;
+      transform: scale(1.1);
+    }
+
+    /* === JOLLY SELECTOR === */
+   #jollySelector {
+   position: fixed;
+   inset: 0; /* prende tutto lo schermo */
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   background: rgba(5, 30, 10, 0.9);
+   backdrop-filter: blur(10px);
+   -webkit-backdrop-filter: blur(10px);
+   z-index: 200; /* sopra HUD e canvas */
+   }
+
+    .selector-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 30px;
+      border-radius: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      max-width: 90%;
+      width: 400px;
+    }
+    .selector-content h3 {
+      font-size: 24px;
+      color: #a8ff80;
+      margin: 0;
+    }
+    .selector-controls {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .arrow-btn {
+      width: 60px;
+      height: 60px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .arrow-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+    .preview-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .preview-name {
+      font-size: 18px;
+      color: #ffd700;
+      font-weight: bold;
+      text-align: center;
+      min-height: 24px;
+    }
+    #previewCanvas {
+      width: 80px;
+      height: 80px;
+      image-rendering: pixelated;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.2);
+    }
     canvas { 
       image-rendering: -moz-crisp-edges; 
       image-rendering: pixelated; 
       image-rendering: crisp-edges;
     }
-
     body, canvas, * {
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -340,24 +501,19 @@
       <button class="menu-btn" id="btnOptions">⚙️ OPZIONI</button>
       <button class="menu-btn" id="btnCredits">📜 CREDITI</button>
     </div>
-
     <!-- SCHERMATA OPZIONI -->
     <div class="menu-screen" id="screen-options">
       <div class="menu-title">OPZIONI</div>
-      
       <div class="settings-row">
         <span>Audio</span>
         <button class="toggle-btn" id="btnToggleAudio">🔊 ON</button>
       </div>
-
       <div class="settings-row">
         <span>Trucchi</span>
         <button class="toggle-btn" id="btnEnableCheats">OFF</button>
       </div>
-
       <button class="menu-btn menu-back" id="btnBackOptions">← INDIETRO</button>
     </div>
-
     <!-- SCHERMATA CREDITI -->
     <div class="menu-screen" id="screen-credits">
       <div class="menu-title">CREDITI</div>
@@ -371,6 +527,34 @@
         Creative Commons Attribution 4.0 International Public License.
       </p>
       <button class="menu-btn menu-back" id="btnBackCredits">← INDIETRO</button>
+    </div>
+  </div>
+
+  <!-- MENU PAUSA -->
+  <div id="pauseMenu" class="overlay hidden">
+    <div class="pause-content">
+      <div class="pause-title">PAUSED</div>
+      <button class="pause-btn" id="btnResume">RIPRENDI</button>
+      <button class="pause-btn" id="btnRestartPause">RIAVVIA</button>
+      <button class="pause-btn" id="btnOptionsPause">OPZIONI</button>
+      <button class="pause-btn" id="btnQuit">ESCI</button>
+      <button class="pause-close" id="btnClosePause">×</button>
+    </div>
+  </div>
+
+  <!-- SELEZIONE JOLLY -->
+  <div id="jollySelector" class="overlay hidden">
+    <div class="selector-content">
+      <h3>SELEZIONA PALLA</h3>
+      <div class="selector-controls">
+        <button class="arrow-btn" id="btnPrev">←</button>
+        <div class="preview-box">
+          <div class="preview-name" id="previewName">Vortice</div>
+          <canvas id="previewCanvas" width="80" height="80"></canvas>
+        </div>
+        <button class="arrow-btn" id="btnNext">→</button>
+      </div>
+      <button class="restart" id="btnSelectJolly">SELEZIONA</button>
     </div>
   </div>
 
@@ -422,8 +606,7 @@
   </div>
 
   <div class="hint" id="hint">Tieni premuto per “agganciare” la palla, trascina nella fascia alta e lascia per farla cadere!</div>
-</body>
-</html>
+
 <script>
 (() => {
   /* ==========================
@@ -477,28 +660,25 @@
 
 class Ball {
   constructor(x, y, type, sprite) {
-    this.id = Math.random().toString(36).slice(2); // ID unico
+    this.id = Math.random().toString(36).slice(2);
     this.x = x;
     this.y = y;
     this.type = type;
-    this.r = RADII[type];           // Raggio
-    this.m = MASSE[type];           // Massa
-    this.rest = REST[type];         // Coefficiente di restituzione
-    this.sprite = sprite;           // Canvas con l'immagine
-
-    // Fisica
+    this.r = RADII[type];
+    this.m = MASSE[type];
+    this.rest = REST[type];
+    this.sprite = sprite;
     this.vx = 0;
     this.vy = 0;
     this.ax = 0;
     this.ay = 0;
-
-    // Stato
-    this.held = false;              // Se è tenuta dal giocatore
-    this.asleep = false;            // Se è ferma
-    this.squash = 0;                // Effetto schiacciamento
-    this.merging = false;           // Durante fusione
+    this.held = false;
+    this.asleep = false;
+    this.squash = 0;
+    this.merging = false;
   }
 }
+
   // Meccaniche di livello
   let level = 1;
   const LEVEL_THRESHOLD = 500;
@@ -537,7 +717,6 @@ class Ball {
 
   const R = (a, b) => a + Math.random() * (b - a);
 
-
   // Funzione helper per esagono (calcio)
   function drawHex(cx, x, y, size) {
     cx.save();
@@ -558,7 +737,6 @@ class Ball {
   // Cache sprite
   const spriteCache = new Map();
   const imagePromises = [];
-
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -597,13 +775,77 @@ const btnBackCredits = document.getElementById('btnBackCredits');
 const btnToggleAudio = document.getElementById('btnToggleAudio');
 const btnEnableCheats = document.getElementById('btnEnableCheats');
 
+// PAUSE MENU ELEMENTS
+const pauseMenu = document.getElementById('pauseMenu');
+const btnResume = document.getElementById('btnResume');
+const btnRestartPause = document.getElementById('btnRestartPause');
+const btnOptionsPause = document.getElementById('btnOptionsPause');
+const btnQuit = document.getElementById('btnQuit');
+const btnClosePause = document.getElementById('btnClosePause');
+
+// JOLLY SELECTOR ELEMENTS
+const jollySelector = document.getElementById('jollySelector');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const previewName = document.getElementById('previewName');
+const previewCanvas = document.getElementById('previewCanvas');
+const btnSelectJolly = document.getElementById('btnSelectJolly');
+const previewCtx = previewCanvas.getContext('2d');
+
+// JOLLY SELECTABLE TYPES
+const jollySelectableTypes = [
+  'golf', 'pingpong', 'squash', 'tennis', 'basket', 'calcio', 'pallamedica',
+  'bomba', 'vetro', 'vortice', 'detonatrice', 'metal', 'oro'
+];
+let jollySelectionIndex = 0;
+
+function updateJollyPreview() {
+  const type = jollySelectableTypes[jollySelectionIndex];
+  previewName.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+  getSprite(type).then(sprite => {
+    if (!sprite) return;
+    previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    const size = Math.min(previewCanvas.width, previewCanvas.height) * 0.8;
+    const x = (previewCanvas.width - size) / 2;
+    const y = (previewCanvas.height - size) / 2;
+    previewCtx.imageSmoothingEnabled = false;
+    previewCtx.drawImage(sprite, x, y, size, size);
+  }).catch(()=>{});
+}
+
+btnPrev.addEventListener('click', () => {
+  jollySelectionIndex = (jollySelectionIndex - 1 + jollySelectableTypes.length) % jollySelectableTypes.length;
+  updateJollyPreview();
+});
+
+btnNext.addEventListener('click', () => {
+  jollySelectionIndex = (jollySelectionIndex + 1) % jollySelectableTypes.length;
+  updateJollyPreview();
+});
+
+btnSelectJolly.addEventListener('click', () => {
+  const type = jollySelectableTypes[jollySelectionIndex];
+  spawnBall(W/2, spawnY, type).then(ball => {
+    if (!ball) return;
+    ball.held = true;
+    ball.asleep = false;
+    heldBall = ball;
+    setTimeout(() => {
+      ball.held = false;
+      heldBall = null;
+      jollySelector.classList.remove('visible');
+      jollySelector.classList.add('hidden');
+      hasJolly = false;
+      updatePowerupsUI();
+    }, 50);
+  }).catch(()=>{});
+  jollySelectionIndex = 0;
+});
+
 // Funzione per avviare il gioco
 function startGame() {
-  // Nascondi menu, mostra HUD
   menuOverlay.style.display = 'none';
   document.querySelector('.hud').classList.add('visible');
-
-  // Reset stato
   balls = [];
   score = 0;
   level = 1;
@@ -614,24 +856,17 @@ function startGame() {
   hasJolly = false;
   hasFuoco = false;
   heldPowerup = null;
-
-  // Inizializza UI
   scoreEl.textContent = fmt(0);
   levelEl.textContent = `LIVELLO ${level}`;
   updatePowerupsUI();
   redrawNext();
-
-  // Spawn palle iniziali
   for (let i = 0; i < 4; i++) {
     spawnBall(R(80, W - 80), R(100, 200), 'golf');
   }
-
-  // Mostra hint
   setTimeout(() => {
     hintEl.classList.add('show');
     setTimeout(() => hintEl.classList.remove('show'), 3000);
   }, 500);
-
   loop();
 }
 
@@ -669,44 +904,32 @@ async function getSprite(type) {
     if (spriteCache.has(type)) {
         return spriteCache.get(type);
     }
-
     let sprite = null;
     const imgPath = typeToImage[type];
-
     if (!imgPath) {
         console.warn(`[getSprite] Tipo sconosciuto: '${type}'`);
     } else {
         try {
             const fullPath = `assets/sprite/${imgPath}`;
             const img = await loadImage(fullPath);
-
             const r = RADII[type];
-            const scale = 1.5; // <-- Fattore di scala (puoi regolarlo)
-            const sizePx = Math.ceil(r * 2 * DPR * scale); // Dimensione canvas
+            const scale = 1.5;
+            const sizePx = Math.ceil(r * 2 * DPR * scale);
             const canvas = document.createElement('canvas');
             canvas.width = canvas.height = sizePx;
-            const ctx = canvas.getContext('2d'); // <-- Contesto LOCALE del canvas sprite
-
-            // Calcola dimensioni di disegno
+            const ctx = canvas.getContext('2d');
             const drawSize = r * 2 * DPR * scale;
             const offset = (sizePx - drawSize) / 2;
-
-            // Disabilita anti-aliasing per pixel art
             ctx.imageSmoothingEnabled = false;
-
-            // Disegna l'immagine centrata e scalata
             ctx.drawImage(img, offset, offset, drawSize, drawSize);
-
             sprite = canvas;
         } catch (err) {
             console.error(`Errore caricamento sprite per ${type}:`, err);
         }
     }
-
-    // Fallback visivo se manca
     if (!sprite) {
         console.error(`[Asset Mancante] '${type}' non caricato.`);
-        const r = RADII[type];
+        const r = RADII[type] || 24;
         const scale = 1.5;
         const sizePx = Math.ceil(r * 2 * DPR * scale);
         const canvas = document.createElement('canvas');
@@ -714,13 +937,11 @@ async function getSprite(type) {
         const ctx = canvas.getContext('2d');
         const center = sizePx / 2;
         const radius = r * DPR * scale;
-
         ctx.translate(center, center);
         ctx.fillStyle = '#d32f2f';
         ctx.beginPath();
         ctx.arc(0, 0, radius, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 4;
         ctx.beginPath();
@@ -729,10 +950,8 @@ async function getSprite(type) {
         ctx.moveTo(-radius * 0.7, radius * 0.7);
         ctx.lineTo(radius * 0.7, -radius * 0.7);
         ctx.stroke();
-
         sprite = canvas;
     }
-
     spriteCache.set(type, sprite);
     return sprite;
 }
@@ -746,7 +965,7 @@ let spritesLoaded = false;
     spritesLoaded = true;
   } catch (err) {
     console.warn('⚠️ Alcuni sprite potrebbero non essere stati caricati:', err);
-    spritesLoaded = true; // Procedi comunque
+    spritesLoaded = true;
   }
 })();
 
@@ -815,7 +1034,6 @@ function addScore(n, x, y) {
   scoreEl.classList.add('highlight');
   setTimeout(() => scoreEl.classList.remove('highlight'), 300);
   floatText(`+${n}`, x, y);
-
   const newLevel = Math.floor(score / LEVEL_THRESHOLD) + 1;
   if (newLevel > level) {
     level = newLevel;
@@ -835,7 +1053,7 @@ function onLevelUp() {
 }
 
 // Particelle
-const particles = [];
+let particles = [];
 function spawnStars(x, y) {
   for (let i = 0; i < 12; i++) {
     const size = R(2, 5) * DPR;
@@ -886,7 +1104,6 @@ function sfx(kind) {
     const o = Audio.createOscillator();
     o.connect(g);
     const now = Audio.currentTime;
-
     switch (kind) {
       case 'tink': o.type = 'sine'; o.frequency.setValueAtTime(700, now); o.frequency.exponentialRampToValueAtTime(500, now + 0.1); break;
       case 'boing': o.type = 'triangle'; o.frequency.setValueAtTime(200, now); o.frequency.exponentialRampToValueAtTime(150, now + 0.15); break;
@@ -912,19 +1129,15 @@ let currentPointerId = null;
 
 canvas.addEventListener('pointerdown', (e) => {
     if (gameOver || paused || isDragging) return;
-
     const now = performance.now() / 1000;
     if (now - lastDropTime < DROP_COOLDOWN) {
         floatText('Aspetta!', W / 2, H / 2);
         sfx('tink');
         return;
     }
-
     const rect = canvas.getBoundingClientRect();
     let x = (e.clientX - rect.left) / rect.width * W;
-
     if (x < 10 || x > W - 10) return;
-
     let type;
     if (level >= 5 && Math.random() < SPECIAL_CHANCE) {
         const choices = ['bomba', 'vetro', 'vortice', 'detonatrice'];
@@ -934,59 +1147,41 @@ canvas.addEventListener('pointerdown', (e) => {
     } else {
         type = TYPES[Math.floor(R(0, Math.min(highestTypeIndex + 1, 5)))];
     }
-
     if (balls.length >= MAX_BALLS) return;
-
-    // ✅ SPAWN ASYNC — usa .then()
     spawnBall(x, spawnY, type).then(ball => {
         if (!ball) return;
-
         heldBall = ball;
         heldBall.vx = 0;
         heldBall.vy = 0;
         heldBall.held = true;
         heldBall.asleep = false;
-
         isDragging = true;
         currentPointerId = e.pointerId;
-
         e.preventDefault();
         canvas.setPointerCapture(e.pointerId);
-
         floatText('PRONTO', x, spawnY - 20);
         sfx('tink');
         lastDropTime = now;
-    });
+    }).catch(()=>{});
 });
 
-// ✅ Gestione separata del movimento globale
 canvas.addEventListener('pointermove', (e) => {
     if (!isDragging || !heldBall || e.pointerId !== currentPointerId) return;
-    
-    e.preventDefault(); // Importante per mobile
-    
+    e.preventDefault();
     const rect = canvas.getBoundingClientRect();
     const newX = (e.clientX - rect.left) / rect.width * W;
-    
-    // ✅ Limita il movimento solo orizzontalmente nella fascia alta
     const minX = 10 + heldBall.r;
     const maxX = W - 10 - heldBall.r;
     heldBall.x = Math.max(minX, Math.min(maxX, newX));
-    // ✅ Mantieni SEMPRE nella posizione Y della fascia alta
     heldBall.y = spawnY;
 });
 
-// ✅ Gestione del rilascio
 canvas.addEventListener('pointerup', (e) => {
     if (!isDragging || !heldBall || e.pointerId !== currentPointerId) return;
-    
-    // ✅ Rilascia la palla solo qui
     heldBall.held = false;
     heldBall.asleep = false;
-    
     isDragging = false;
     heldBall = null;
-    
     try {
         canvas.releasePointerCapture(currentPointerId);
     } catch (e) {}
@@ -995,24 +1190,65 @@ canvas.addEventListener('pointerup', (e) => {
 
 canvas.addEventListener('pointercancel', (e) => {
     if (!isDragging || !heldBall || e.pointerId !== currentPointerId) return;
-    
-    // ✅ Anche se il tocco viene cancellato, rilascia la palla
     heldBall.held = false;
     heldBall.asleep = false;
-    
     isDragging = false;
     heldBall = null;
-    
     try {
         canvas.releasePointerCapture(currentPointerId);
     } catch (e) {}
     currentPointerId = null;
 });
 
+// === NUOVO: GESTIONE MENU PAUSA ===
 pauseBtn.addEventListener('click', () => {
+  if (gameOver) return;
   paused = !paused;
   pauseBtn.style.opacity = paused ? 0.6 : 1;
-  if (paused) sfx('boing');
+  if (paused) {
+    sfx('boing');
+    pauseMenu.classList.remove('hidden');
+    pauseMenu.classList.add('visible');
+  } else {
+    pauseMenu.classList.remove('visible');
+    pauseMenu.classList.add('hidden');
+  }
+});
+
+// PULSANTI MENU PAUSA
+btnResume.addEventListener('click', () => {
+  paused = false;
+  pauseBtn.style.opacity = 1;
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
+});
+
+btnRestartPause.addEventListener('click', () => {
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
+  resetGame();
+});
+
+btnOptionsPause.addEventListener('click', () => {
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
+  screenMain.classList.remove('active');
+  screenOptions.classList.add('active');
+});
+
+btnQuit.addEventListener('click', () => {
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
+  menuOverlay.style.display = 'flex';
+  document.querySelector('.hud').classList.remove('visible');
+  resetGame();
+});
+
+btnClosePause.addEventListener('click', () => {
+  paused = false;
+  pauseBtn.style.opacity = 1;
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
 });
 
 inventoryBtn.addEventListener('click', () => {
@@ -1032,9 +1268,11 @@ inventoryBtn.addEventListener('click', () => {
     balls = [];
     hasFuoco = false;
   } else if (hasJolly) {
-    floatText('JOLLY: tocca per scegliere!', W / 2, H / 2);
+    jollySelector.classList.remove('hidden');
+    jollySelector.classList.add('visible');
+    updateJollyPreview();
+    floatText('JOLLY: Seleziona una palla', W / 2, H / 2);
     sfx('powerup');
-    heldPowerup = 'jolly';
   }
   updatePowerupsUI();
 });
@@ -1054,46 +1292,42 @@ function resetGame() {
   hasJolly = false;
   hasFuoco = false;
   heldPowerup = null;
-
+  jollySelector.classList.remove('visible');
+  jollySelector.classList.add('hidden');
   scoreEl.textContent = fmt(0);
   levelEl.textContent = `LIVELLO ${level}`;
   updatePowerupsUI();
   redrawNext();
-
   for (let i = 0; i < 4; i++) {
     spawnBall(R(80, W - 80), R(100, 200), 'golf');
   }
-
   overEl.classList.remove('visible');
   setTimeout(() => overEl.classList.add('hidden'), 300);
 }
 
 async function spawnBall(x, y, type) {
   if (!type) return null;
-
-  // ✅ RECUPERA il raggio dalle costanti RADII
   const r = RADII[type];
-  
   let sprite = null;
   if (spriteCache.has(type)) {
     sprite = spriteCache.get(type);
   } else {
     const imgPath = `assets/sprite/${typeToImage[type]}`;
-    const img = await loadImage(imgPath);
-
-    if (!img) return null;
-
-    // ✅ USA la variabile r che ora è definita
-    const s = Math.ceil(r * 2 * DPR + 10);
-    const c = document.createElement('canvas');
-    c.width = c.height = s;
-    const cx = c.getContext('2d');
-    const size = r * 2 * DPR;
-    cx.drawImage(img, (s - size) / 2, (s - size) / 2, size, size);
-    sprite = c;
-    spriteCache.set(type, sprite);
+    try {
+      const img = await loadImage(imgPath);
+      const s = Math.ceil(r * 2 * DPR + 10);
+      const c = document.createElement('canvas');
+      c.width = c.height = s;
+      const cx = c.getContext('2d');
+      const size = r * 2 * DPR;
+      cx.drawImage(img, (s - size) / 2, (s - size) / 2, size, size);
+      sprite = c;
+      spriteCache.set(type, sprite);
+    } catch (err) {
+      console.warn('Impossibile caricare immagine:', imgPath, err);
+      sprite = await getSprite(type);
+    }
   }
-
   const ball = new Ball(x, y, type, sprite);
   balls.push(ball);
   return ball;
@@ -1108,12 +1342,9 @@ async function redrawNext() {
         console.error(`Sprite non trovato per il tipo: ${type}`);
         return;
     }
-    
-    // ✅ AUMENTA la dimensione nel nextIcon
-    const sz = 48 * DPR; // Da 36 a 48
+    const sz = 48 * DPR;
     const x = (nextIcon.width - sz) / 2;
     const y = (nextIcon.height - sz) / 2;
-    
     nextCtx.imageSmoothingEnabled = false;
     nextCtx.drawImage(s, x, y, sz, sz);
 }
@@ -1122,8 +1353,6 @@ async function redrawNext() {
 function explode(x, y) {
   sfx('boing');
   floatText('BOOM!', x, y);
-
-  // Particelle esplosione
   for (let i = 0; i < 20; i++) {
       particles.push({
           x, y,
@@ -1135,16 +1364,10 @@ function explode(x, y) {
           size: R(3, 6) * DPR
       });
   }
-
-  // Nuova lista di palle SOTTOVIVE all'esplosione
   const survivors = [];
-
   for (const b of balls) {
       const dist = Math.hypot(b.x - x, b.y - y);
-
-      // Se è nel raggio di esplosione (80px)
       if (dist < 80) {
-          // Se è metal/oro, attiva potenziamento e NON la distruggere
           if (b.type === 'metal') {
               hasJolly = true;
               floatText('JOLLY!', b.x, b.y);
@@ -1160,17 +1383,11 @@ function explode(x, y) {
               }
               sfx('powerup');
           }
-          // 👉 Tutte le altre palle (incluse le bombe) vengono DISTRUTTE (non aggiunte a survivors)
       } else {
-          // Fuori dal raggio → sopravvive
           survivors.push(b);
       }
   }
-
-  // ✅ Sostituisci l'array globale
   balls = survivors;
-
-  // ✅ Aggiorna UI potenziamenti
   updatePowerupsUI();
 }
 
@@ -1192,22 +1409,20 @@ function checkCrush() {
     }
   }
 }
+function detonateAllBombs() {
+  balls = balls.filter(ball => ball.type !== 'bomba');
+}
 
 function update(dt) {
     if (paused || gameOver) return;
-
     G = BASE_G + (level - 1) * 100;
     gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10);
-
-    // Fisica
     for (const b of balls) {
         if (b.asleep || b.held) continue;
         b.vy += G * dt;
         b.vx *= (1 - FRICTION);
         b.x += b.vx * dt;
         b.y += b.vy * dt;
-
-        // Muri laterali
         if (b.x - b.r < 10) {
             b.x = 10 + b.r;
             b.vx = -b.vx * b.rest * 0.8;
@@ -1216,39 +1431,27 @@ function update(dt) {
             b.x = W - 10 - b.r;
             b.vx = -b.vx * b.rest * 0.8;
         }
-
-        // 🚨 PAVIMENTO — con gestione SPECIALE per la palla di vetro
         if (b.y + b.r > H - 10) {
             b.y = H - 10 - b.r;
-
-            // ✅ Se è una palla di vetro, controlla se è sostenuta da un'altra palla
             if (b.type === 'vetro') {
                 let isSupported = false;
-
                 for (const other of balls) {
                     if (other === b || other.held) continue;
-
-                    // Controlla se c'è una palla sotto di lei
                     if (other.y > b.y && Math.abs(b.x - other.x) < (b.r + other.r) * 0.8) {
-                        // Calcola la distanza tra il fondo del vetro e la cima dell'altra palla
                         const gap = (b.y + b.r) - (other.y - other.r);
-                        if (gap < 5) { // tolleranza di 5 pixel
+                        if (gap < 5) {
                             isSupported = true;
                             break;
                         }
                     }
                 }
-
                 if (!isSupported) {
-                    // 💥 ROMPI LA PALLA DI VETRO — senza dare punti
                     floatText('SPLASH!', b.x, b.y);
                     sfx('tink');
                     balls = balls.filter(ball => ball !== b);
-                    continue; // salta il resto per questa palla
+                    continue;
                 }
             }
-
-            // ✅ Comportamento normale per tutte le altre palle (o vetro sostenuto)
             const effectiveRest = Math.max(0.2, b.rest - (level - 1) * 0.04);
             b.vy = -Math.abs(b.vy) * effectiveRest;
             if (Math.abs(b.vy) < 15) b.vy = 0;
@@ -1256,8 +1459,6 @@ function update(dt) {
             if (Math.abs(b.vy) < 10 && Math.abs(b.vx) < 8) b.asleep = true;
         }
     }
-
-    // Vortice
     if (vortexEffect) {
         vortexEffect.duration -= dt;
         if (vortexEffect.duration <= 0) {
@@ -1276,8 +1477,6 @@ function update(dt) {
             }
         }
     }
-
-    // Grid collision
     const cell = 64;
     const grid = new Map();
     function key(i, j) { return `${i},${j}`; }
@@ -1292,7 +1491,6 @@ function update(dt) {
             }
         }
     }
-
     const pairs = new Set();
     for (const arr of grid.values()) {
         for (let a = 0; a < arr.length; a++) {
@@ -1301,12 +1499,10 @@ function update(dt) {
                 const id = A.id < B.id ? A.id + '|' + B.id : B.id + '|' + A.id;
                 if (pairs.has(id)) continue;
                 pairs.add(id);
-
                 const dx = B.x - A.x, dy = B.y - A.y;
                 const dist2 = dx * dx + dy * dy;
                 const rr = A.r + B.r;
                 if (dist2 > rr * rr) continue;
-
                 const dist = Math.sqrt(dist2) || 1;
                 const nx = dx / dist, ny = dy / dist;
                 const overlap = rr - dist;
@@ -1316,7 +1512,6 @@ function update(dt) {
                 A.y -= ny * overlap * aShare;
                 B.x += nx * overlap * bShare;
                 B.y += ny * overlap * bShare;
-
                 const rvx = B.vx - A.vx, rvy = B.vy - A.vy;
                 const velAlongNormal = rvx * nx + rvy * ny;
                 if (velAlongNormal < 0) {
@@ -1330,18 +1525,14 @@ function update(dt) {
                     A.squash = B.squash = Math.min(1.5, Math.abs(velAlongNormal) / 400);
                     A.asleep = B.asleep = false;
                 }
-
-                // Merge
                 if (A.type === B.type && !A.merging && !B.merging && Math.hypot(rvx, rvy) < MERGE_SPEED_THRESHOLD && A.held === B.held) {
                     if (A.type === 'bomba') {
                         explode((A.x + B.x) / 2, (A.y + B.y) / 2);
-                        // Doppia sicurezza: rimuovi esplicitamente
                         balls = balls.filter(b => b !== A && b !== B);
                     } else if (A.type === 'detonatrice') {
                         detonateAllBombs();
                         balls = balls.filter(b => b !== A && b !== B);
                     } else if (A.type === 'metal' || A.type === 'oro') {
-                        // No merge
                     } else {
                         mergeBalls(A, B);
                     }
@@ -1349,18 +1540,13 @@ function update(dt) {
             }
         }
     }
-
-    // Game over
     for (const b of balls) {
         if (b.asleep && !b.held && b.y - b.r < gameOverY) {
             endGame();
             return;
         }
     }
-
     checkCrush();
-
-    // Particelle
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.t += dt;
@@ -1389,24 +1575,19 @@ function endGame() {
 function mergeBalls(A, B) {
   sfx('merge');
   spawnStars((A.x + B.x) / 2, (A.y + B.y) / 2);
-
   const baseType = A.type;
   const idx = TYPES.indexOf(baseType);
   const scoreBonus = (A.type === 'vetro' || B.type === 'vetro') ? 3 : 1;
-
   if (idx < SCORE_STEP.length) {
     addScore(SCORE_STEP[idx] * scoreBonus, (A.x + B.x) / 2, (A.y + B.y) / 2);
   }
-
   A.merging = B.merging = true;
   const totalMass = A.m + B.m;
   const x = (A.x * A.m + B.x * B.m) / totalMass;
   const y = (A.y * A.m + B.y * B.m) / totalMass;
   const vx = (A.vx * A.m + B.vx * B.m) / totalMass;
   const vy = (A.vy * A.m + B.vy * B.m) / totalMass;
-
   balls = balls.filter(b => b !== A && b !== B);
-
   const nextIdx = Math.min(idx + 1, TYPES.length - 1);
   const newType = TYPES[nextIdx];
   const C = {
@@ -1426,7 +1607,6 @@ function mergeBalls(A, B) {
     highestTypeIndex = Math.max(highestTypeIndex, nextIdx);
   }
   redrawNext();
-
   if (newType === 'vortice') {
     vortexEffect = { x: C.x, y: C.y, duration: 2.0 };
     floatText('VORTICE!', C.x, C.y - 40);
@@ -1434,13 +1614,8 @@ function mergeBalls(A, B) {
   }
 }
 
-// ==========================
-// CHEAT CODE SYSTEM
-// ==========================
 const CHEAT_CODES = {
-  "BALLDROP": () => {
-    enableCheats();
-  },
+  "BALLDROP": () => { enableCheats(); },
   "GODMODE": () => {
     score = 999999;
     level = 99;
@@ -1464,15 +1639,13 @@ const CHEAT_CODES = {
 };
 
 let cheatBuffer = "";
-
 function enableCheats() {
-  // Esporre funzioni utili alla console
   window.cheats = {
     addScore: (n) => addScore(n, W/2, 50),
     setLevel: (l) => {
       level = l;
       levelEl.textContent = `LIVELLO ${level}`;
-      onLevelUp(); // Applica effetti livello
+      onLevelUp();
     },
     spawn: (type) => spawnBall(W/2, spawnY, type),
     giveJolly: () => { hasJolly = true; updatePowerupsUI(); floatText('JOLLY!', W/2, 50); },
@@ -1480,7 +1653,6 @@ function enableCheats() {
     godMode: () => CHEAT_CODES["GODMODE"](),
     clear: () => CHEAT_CODES["CLEAR"]()
   };
-
   console.log("%c🎮 TRUCCHI ATTIVATI! Comandi disponibili:", "color: #ffdd00; font-weight: bold");
   console.log(`- cheats.addScore(1000)`);
   console.log(`- cheats.setLevel(10)`);
@@ -1490,15 +1662,12 @@ function enableCheats() {
   console.log(`- cheats.clear()`);
 }
 
-// Ascolta i tasti per cheat
 document.addEventListener('keydown', (e) => {
   if (gameOver) return;
-
   cheatBuffer += e.key.toUpperCase();
   if (cheatBuffer.length > 10) {
     cheatBuffer = cheatBuffer.slice(-10);
   }
-
   for (const [code, action] of Object.entries(CHEAT_CODES)) {
     if (cheatBuffer.endsWith(code)) {
       cheatBuffer = "";
@@ -1509,12 +1678,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 function draw() {
-  // Sfondo
   ctx.save();
   ctx.fillStyle = grassPat;
   ctx.fillRect(0, 0, W, H);
-
-  // Zona pericolosa in alto
   ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
   ctx.fillRect(0, 0, W, gameOverY);
   ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
@@ -1523,14 +1689,10 @@ function draw() {
   ctx.moveTo(0, gameOverY);
   ctx.lineTo(W, gameOverY);
   ctx.stroke();
-
-  // Bordo esterno
   ctx.strokeStyle = 'rgba(255,255,255,0.2)';
   ctx.lineWidth = 2;
   ctx.strokeRect(8, 8, W - 16, H - 16);
   ctx.restore();
-
-  // Disegna le palle ordinate per profondità (dall'alto in basso)
   const sortedBalls = [...balls].sort((a, b) => a.y - b.y);
   for (const b of sortedBalls) {
     const sprite = spriteCache.get(b.type);
@@ -1538,25 +1700,19 @@ function draw() {
       console.warn(`[draw] Sprite non trovato per '${b.type}', saltato`);
       continue;
     }
-
     const sx = sprite.width / 2;
     const sy = sprite.height / 2;
     const squish = 1 - Math.min(0.3, b.squash * 0.3);
-
     ctx.save();
     ctx.translate(b.x, b.y);
     ctx.scale(1 / squish, squish);
-
     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
     ctx.shadowBlur = 8;
     ctx.shadowOffsetY = 4;
     ctx.drawImage(sprite, -sx, -sy, sprite.width, sprite.height);
     ctx.restore();
-
     b.squash *= 0.7;
   }
-
-  // Effetto vortice (se attivo)
   if (vortexEffect) {
     ctx.save();
     ctx.globalAlpha = 0.3;
@@ -1570,15 +1726,11 @@ function draw() {
     }
     ctx.restore();
   }
-
-  // Particelle
   ctx.save();
   for (const p of particles) {
     const alpha = 1 - p.t / p.life;
     if (alpha <= 0) continue;
-
     ctx.globalAlpha = alpha;
-
     if (p.text) {
       ctx.font = `bold ${p.size}px sans-serif`;
       ctx.fillStyle = p.color;
@@ -1605,7 +1757,6 @@ function loop() {
   let dt = (now - last) / 1000;
   last = now;
   if (dt > 0.2) dt = 0.1;
-
   acc += dt;
   while (acc >= dtFixed && !paused && !gameOver) {
     update(dtFixed);
@@ -1615,6 +1766,8 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-// NON avviare il gioco automaticamente — aspetta il menu
+loop();
 })();
 </script>
+</body>
+</html>
