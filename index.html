@@ -23,6 +23,49 @@
     }
     /* nasconde elementi con classe .hidden */
     .hidden { display: none !important; }
+
+    /* === MISSIONI === */
+#missionsOverlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(5, 30, 10, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.missions-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  max-width: 90%;
+  width: 400px;
+}
+
+.mission-item {
+  width: 100%;
+  padding: 15px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e0ffe0;
+  text-align: left;
+}
+
+.mission-item.completed {
+  background: rgba(40, 167, 69, 0.2);
+  color: #a8ff80;
+}
+
+.mission-item.active {
+  border-color: #a8ff80;
+  box-shadow: 0 0 10px rgba(168, 255, 128, 0.3);
+}
+
     /* === MENU SYSTEM === */
     #menu-overlay {
       position: fixed;
@@ -101,6 +144,27 @@
       cursor: pointer;
     }
     .toggle-btn.off { background: #f44336; }
+/* === TEMI === */
+body.theme-fire { background: #2a0a0a; }
+body.theme-night { background: #0a0a2a; }
+
+.hud.theme-fire {
+  background: rgba(42, 10, 10, 0.95);
+  border-bottom-color: rgba(255, 100, 100, 0.2);
+}
+.hud.theme-night {
+  background: rgba(10, 10, 42, 0.95);
+  border-bottom-color: rgba(100, 100, 255, 0.2);
+}
+
+#game.theme-fire {
+  background: #4a1a1a;
+  border-color: rgba(255, 100, 100, 0.2);
+}
+#game.theme-night {
+  background: #1a1a4a;
+  border-color: rgba(100, 100, 255, 0.2);
+}
     /* === HUD (nascosto all'avvio) === */
     .hud { 
       position: fixed; 
@@ -501,6 +565,16 @@
       <button class="menu-btn" id="btnOptions">⚙️ OPZIONI</button>
       <button class="menu-btn" id="btnCredits">📜 CREDITI</button>
     </div>
+
+    <!-- SCHERMATA MODALITÀ DI GIOCO -->
+    <div class="menu-screen" id="screen-game-modes">
+      <div class="menu-title">MODALITÀ</div>
+      <button class="menu-btn" id="btnModeClassic">🎯 CLASSICA</button>
+      <button class="menu-btn" id="btnModeMissions">🎯 MISSIONI</button>
+      <button class="menu-btn" id="btnModeMultiplayer">🎯 MULTIPLAYER</button>
+      <button class="menu-btn menu-back" id="btnBackModes">← INDIETRO</button>
+    </div>
+
     <!-- SCHERMATA OPZIONI -->
     <div class="menu-screen" id="screen-options">
       <div class="menu-title">OPZIONI</div>
@@ -508,6 +582,29 @@
         <span>Audio</span>
         <button class="toggle-btn" id="btnToggleAudio">🔊 ON</button>
       </div>
+<div class="settings-row">
+  <span>Lingua</span>
+  <select id="langSelect" class="toggle-btn" style="width: auto; padding: 6px 12px;">
+    <option value="it">Italiano</option>
+    <option value="sc">Sicilianu</option>
+  </select>
+</div>
+<div class="settings-row">
+  <span>Tema</span>
+  <select id="themeSelect" class="toggle-btn" style="width: auto; padding: 6px 12px;">
+    <option value="green">Verde</option>
+    <option value="fire">Fuoco</option>
+    <option value="night">Notte</option>
+  </select>
+</div>
+<div class="settings-row">
+  <span>Sfondo</span>
+  <select id="bgSelect" class="toggle-btn" style="width: auto; padding: 6px 12px;">
+    <option value="grass">Erba</option>
+    <option value="concrete">Cemento</option>
+    <option value="wood">Legno</option>
+  </select>
+</div>
       <div class="settings-row">
         <span>Trucchi</span>
         <button class="toggle-btn" id="btnEnableCheats">OFF</button>
@@ -533,7 +630,7 @@
   <!-- MENU PAUSA -->
   <div id="pauseMenu" class="overlay hidden">
     <div class="pause-content">
-      <div class="pause-title">PAUSED</div>
+      <div class="pause-title">PAUSA</div>
       <button class="pause-btn" id="btnResume">RIPRENDI</button>
       <button class="pause-btn" id="btnRestartPause">RIAVVIA</button>
       <button class="pause-btn" id="btnOptionsPause">OPZIONI</button>
@@ -605,8 +702,7 @@
     </div>
   </div>
 
-  <div class="hint" id="hint">Tieni premuto per “agganciare” la palla, trascina nella fascia alta e lascia per farla cadere!</div>
-
+  <div class="hint" id="hint">Tieni premuto per "agganciare" la palla, trascina nella fascia alta e lascia per farla cadere!</div>
 <script>
 (() => {
   /* ==========================
@@ -717,6 +813,97 @@ class Ball {
 
   const R = (a, b) => a + Math.random() * (b - a);
 
+// 🌍 TRADUZIONI
+const translations = {
+  it: {
+    play: "🎮 GIOCA",
+    options: "⚙️ OPZIONI",
+    credits: "📜 CREDITI",
+    back: "← INDIETRO",
+    audio: "Audio",
+    cheats: "Trucchi",
+    language: "Lingua",
+    theme: "Tema",
+    background: "Sfondo",
+    resume: "RIPRENDI",
+    restart: "RIAVVIA",
+    quit: "ESCI",
+    select: "SELEZIONA",
+    paused: "PAUSED",
+    next: "Prossimo",
+    level: "LIVELLO",
+    score: "PUNTEGGIO",
+    gameOver: "GAME OVER",
+    restartGame: "Rigioca",
+    hint: "Tieni premuto per “agganciare” la palla, trascina nella fascia alta e lascia per farla cadere!",
+    creditsText: "Realizzato con ❤️ da <strong>Mirko Yuri Donato</strong><br>Il gioco presenta parti realizzati mediante l'uso del-<br>l'intelligenza artificiale, principalmente i Modelli GPT 5<br>Qwen 3 di Alibaba Cloud, DeepSeek e Microsoft Copilot<br>Il codice sorgente è rilasciato sotto la licenza MIT,<br>mentre gli assets sono sotto la<br>Creative Commons Attribution 4.0 International Public License."
+  },
+  sc: {
+    play: "🎮 GIOCA",
+    options: "⚙️ UZIONI",
+    credits: "📜 CRIDITI",
+    back: "← NDRU",
+    audio: "Audio",
+    cheats: "Trucchi",
+    language: "Lingua",
+    theme: "Tema",
+    background: "Sfunnu",
+    resume: "RIPRINNI",
+    restart: "RIAVVIA",
+    quit: "ESCI",
+    select: "SCEGLI",
+    paused: "PAUSATO",
+    next: "Prossimu",
+    level: "LIVELLU",
+    score: "PUNTEGGIU",
+    gameOver: "GAME OVER",
+    restartGame: "Rigioca",
+    hint: "Tieni primitu pi “nciurrari” la palora, trascina ntâ fascia auta e lassa pi fari cadiri!",
+    creditsText: "Fattu cu ❤️ di <strong>Mirko Yuri Donato</strong><br>Lu jocu cci à parti fattu cu l’AI, principalmenti GPT 5,<br>Qwen 3 di Alibaba Cloud, DeepSeek e Microsoft Copilot<br>Lu codici è sutta licenza MIT,<br>mmentri li assets sunnu sutta<br>Creative Commons Attribution 4.0 International."
+  }
+};
+
+let currentLang = 'it';
+
+function setLanguage(lang) {
+  currentLang = lang;
+  const t = translations[lang];
+  
+  // Menu principale
+  document.getElementById('btnPlay').textContent = t.play;
+  document.getElementById('btnOptions').textContent = t.options;
+  document.getElementById('btnCredits').textContent = t.credits;
+  document.getElementById('btnBackOptions').textContent = t.back;
+  document.getElementById('btnBackCredits').textContent = t.back;
+  
+  // Opzioni
+  document.querySelector('.settings-row:nth-child(2) span').textContent = t.audio;
+  document.querySelector('.settings-row:nth-child(3) span').textContent = t.cheats;
+  document.querySelector('.settings-row:nth-child(4) span').textContent = t.language;
+  
+  // Pausa
+  document.getElementById('btnResume').textContent = t.resume;
+  document.getElementById('btnRestartPause').textContent = t.restart;
+  document.getElementById('btnOptionsPause').textContent = t.options;
+  document.getElementById('btnQuit').textContent = t.quit;
+  document.querySelector('.pause-title').textContent = t.paused;
+  
+  // HUD
+  document.querySelector('.next span').textContent = t.next;
+  levelEl.textContent = `${t.level} ${level}`;
+  scoreEl.textContent = `${t.score} ${String(score).padStart(6, '0')}`;
+  
+  // Altri
+  document.getElementById('btnSelectJolly').textContent = t.select;
+  hintEl.textContent = t.hint;
+  document.querySelector('.credits-text').innerHTML = t.creditsText;
+  document.getElementById('restartBtn').textContent = t.restartGame;
+  document.querySelector('.title').textContent = "GAME OVER"; // lasciamo in inglese per stile
+  
+  // Salva preferenza
+  localStorage.setItem('ballDropLang', lang);
+}
+
   // Funzione helper per esagono (calcio)
   function drawHex(cx, x, y, size) {
     cx.save();
@@ -791,6 +978,123 @@ const previewName = document.getElementById('previewName');
 const previewCanvas = document.getElementById('previewCanvas');
 const btnSelectJolly = document.getElementById('btnSelectJolly');
 const previewCtx = previewCanvas.getContext('2d');
+// === Parametri per la logica di game-over nella "linea rossa" ==========
+const DANGER_STILL_SPEED = 20;    // px/s -> sotto questo valore la palla è considerata "ferma"
+const DANGER_TIME_LIMIT  = 5.0;   // secondi nella zona rossa prima del game over
+
+// Funzione che attiva game over (personalizzala come vuoi)
+function triggerGameOver(reasonBall) {
+  gameOver = true;
+  // feedback visivo / sonoro
+  floatText('GAME OVER', W/2, H/2);
+  sfx('gameover');
+  // eventualmente evidenzia la palla che ha causato il game over
+  if (reasonBall) {
+    reasonBall.flash = 1.0; // se il renderer usa questo campo
+  }
+  // Eventuali ulteriori pulizie: stop suoni, salva score, ecc.
+}
+
+
+// margini interni del campo (coerenti con il bordo visivo del canvas)
+const WALL = {
+  left: 10,
+  right: W - 10,
+  bottom: H - 10
+};
+
+// Rimbalzo contro le pareti con correzione di penetrazione
+function collideWithWalls(b) {
+  const left   = WALL.left + b.r;
+  const right  = WALL.right - b.r;
+  const bottom = WALL.bottom - b.r;
+
+  // Parete sinistra/destra (asse X)
+  if (b.x < left) {
+    b.x = left;
+    if (b.vx < 0) b.vx = -b.vx * b.rest;
+  } else if (b.x > right) {
+    b.x = right;
+    if (b.vx > 0) b.vx = -b.vx * b.rest;
+  }
+
+  // Pavimento (asse Y)
+  if (b.y > bottom) {
+    b.y = bottom;
+
+    // gestione speciale per la palla "vetro": se non è supportata, si rompe
+    if (b.type === 'vetro') {
+      let supported = false;
+      for (const other of balls) {
+        if (other === b || other.held) continue;
+        if (other.y > b.y && Math.abs(b.x - other.x) < (b.r + other.r) * 0.8) {
+          const gap = (b.y + b.r) - (other.y - other.r);
+          if (gap < 5) { supported = true; break; }
+        }
+      }
+      if (!supported) {
+        floatText('SPLASH!', b.x, b.y);
+        sfx('tink');
+        // rimuovi la palla di vetro
+        const i = balls.indexOf(b);
+        if (i !== -1) balls.splice(i, 1);
+        return;
+      }
+    }
+
+    // rimbalzo con restituzione che scala col livello
+    const effRest = Math.max(0.2, b.rest - (level - 1) * 0.04);
+    b.vy = -Math.abs(b.vy) * effRest;
+  }
+}
+
+// Clamp finale: impedisce in modo assoluto ogni uscita (anche se qualcosa sfugge)
+function hardClamp(b) {
+  b.x = Math.max(WALL.left + b.r, Math.min(WALL.right - b.r, b.x));
+  b.y = Math.min(WALL.bottom - b.r, b.y);
+}
+
+// 🎨 TEMI
+function applyTheme(theme) {
+  const body = document.body;
+  const hud = document.querySelector('.hud');
+  const game = document.getElementById('game');
+  
+  // Rimuovi vecchi temi
+  body.classList.remove('theme-green', 'theme-fire', 'theme-night');
+  hud.classList.remove('theme-green', 'theme-fire', 'theme-night');
+  game.classList.remove('theme-green', 'theme-fire', 'theme-night');
+  
+  // Applica nuovo tema
+  body.classList.add(`theme-${theme}`);
+  hud.classList.add(`theme-${theme}`);
+  game.classList.add(`theme-${theme}`);
+  
+  localStorage.setItem('ballDropTheme', theme);
+}
+
+// 🖼️ SFONDI
+function applyBackground(bg) {
+  // Puoi estendere `grassPat` con altri pattern in futuro
+  // Per ora cambiamo solo il colore di sfondo del canvas
+  localStorage.setItem('ballDropBg', bg);
+}
+
+// Inizializza temi
+const savedTheme = localStorage.getItem('ballDropTheme') || 'green';
+const savedBg = localStorage.getItem('ballDropBg') || 'grass';
+document.getElementById('themeSelect').value = savedTheme;
+document.getElementById('bgSelect').value = savedBg;
+applyTheme(savedTheme);
+applyBackground(savedBg);
+
+// Eventi
+document.getElementById('themeSelect').addEventListener('change', (e) => {
+  applyTheme(e.target.value);
+});
+document.getElementById('bgSelect').addEventListener('change', (e) => {
+  applyBackground(e.target.value);
+});
 
 // JOLLY SELECTABLE TYPES
 const jollySelectableTypes = [
@@ -841,6 +1145,12 @@ btnSelectJolly.addEventListener('click', () => {
   }).catch(()=>{});
   jollySelectionIndex = 0;
 });
+
+// Funzione per mostrare le modalità di gioco
+function showGameModes() {
+  screenMain.classList.remove('active');
+  screenGameModes.classList.add('active');
+}
 
 // Funzione per avviare il gioco
 function startGame() {
@@ -969,14 +1279,27 @@ let spritesLoaded = false;
   }
 })();
 
-// MENU NAVIGATION
+// Carica lingua salvata
+const savedLang = localStorage.getItem('ballDropLang');
+if (savedLang && translations[savedLang]) {
+  currentLang = savedLang;
+  document.getElementById('langSelect').value = savedLang;
+}
+setLanguage(currentLang);
+
+// Cambia lingua al selezionare
+document.getElementById('langSelect').addEventListener('change', (e) => {
+  setLanguage(e.target.value);
+});
+
 btnPlay.addEventListener('click', () => {
   if (!spritesLoaded) {
     floatText('Caricamento...', W/2, H/2);
     return;
   }
-  startGame();
+  showGameModes();
 });
+
 
 btnOptions.addEventListener('click', () => {
   screenMain.classList.remove('active');
@@ -986,6 +1309,33 @@ btnOptions.addEventListener('click', () => {
 btnCredits.addEventListener('click', () => {
   screenMain.classList.remove('active');
   screenCredits.classList.add('active');
+});
+
+// GAME MODES ELEMENTS
+const screenGameModes = document.getElementById('screen-game-modes');
+const btnModeClassic = document.getElementById('btnModeClassic');
+const btnModeMissions = document.getElementById('btnModeMissions');
+const btnModeMultiplayer = document.getElementById('btnModeMultiplayer');
+const btnBackModes = document.getElementById('btnBackModes');
+
+btnBackModes.addEventListener('click', () => {
+  screenGameModes.classList.remove('active');
+  screenMain.classList.add('active');
+});
+
+btnModeClassic.addEventListener('click', () => {
+  screenGameModes.classList.remove('active');
+  startGame();
+});
+
+btnModeMissions.addEventListener('click', () => {
+  screenGameModes.classList.remove('active');
+  showMissionsOverlay();
+});
+
+btnModeMultiplayer.addEventListener('click', () => {
+  screenGameModes.classList.remove('active');
+  showMultiplayerLobby();
 });
 
 btnBackOptions.addEventListener('click', () => {
@@ -1239,16 +1589,23 @@ btnOptionsPause.addEventListener('click', () => {
 btnQuit.addEventListener('click', () => {
   pauseMenu.classList.remove('visible');
   pauseMenu.classList.add('hidden');
+  // ✅ Mostra il menu principale e nascondi tutte le sottoschermate
+  screenOptions.classList.remove('active');
+  screenCredits.classList.remove('active');
+  screenMain.classList.add('active');
   menuOverlay.style.display = 'flex';
   document.querySelector('.hud').classList.remove('visible');
   resetGame();
 });
 
-btnClosePause.addEventListener('click', () => {
-  paused = false;
-  pauseBtn.style.opacity = 1;
+btnOptionsPause.addEventListener('click', () => {
   pauseMenu.classList.remove('visible');
   pauseMenu.classList.add('hidden');
+  // ✅ Mostra SOLO la schermata opzioni
+  screenMain.classList.remove('active');
+  screenCredits.classList.remove('active');
+  screenOptions.classList.add('active');
+  menuOverlay.style.display = 'flex';
 });
 
 inventoryBtn.addEventListener('click', () => {
@@ -1413,163 +1770,197 @@ function detonateAllBombs() {
   balls = balls.filter(ball => ball.type !== 'bomba');
 }
 
+// === UPDATE con timer per zona rossa ===================================
 function update(dt) {
-    if (paused || gameOver) return;
-    G = BASE_G + (level - 1) * 100;
-    gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10);
-    for (const b of balls) {
-        if (b.asleep || b.held) continue;
-        b.vy += G * dt;
-        b.vx *= (1 - FRICTION);
-        b.x += b.vx * dt;
-        b.y += b.vy * dt;
-        if (b.x - b.r < 10) {
-            b.x = 10 + b.r;
-            b.vx = -b.vx * b.rest * 0.8;
-        }
-        if (b.x + b.r > W - 10) {
-            b.x = W - 10 - b.r;
-            b.vx = -b.vx * b.rest * 0.8;
-        }
-        if (b.y + b.r > H - 10) {
-            b.y = H - 10 - b.r;
-            if (b.type === 'vetro') {
-                let isSupported = false;
-                for (const other of balls) {
-                    if (other === b || other.held) continue;
-                    if (other.y > b.y && Math.abs(b.x - other.x) < (b.r + other.r) * 0.8) {
-                        const gap = (b.y + b.r) - (other.y - other.r);
-                        if (gap < 5) {
-                            isSupported = true;
-                            break;
-                        }
-                    }
-                }
-                if (!isSupported) {
-                    floatText('SPLASH!', b.x, b.y);
-                    sfx('tink');
-                    balls = balls.filter(ball => ball !== b);
-                    continue;
-                }
-            }
-            const effectiveRest = Math.max(0.2, b.rest - (level - 1) * 0.04);
-            b.vy = -Math.abs(b.vy) * effectiveRest;
-            if (Math.abs(b.vy) < 15) b.vy = 0;
-            if (Math.abs(b.vx) < 20) b.vx *= 0.95;
-            if (Math.abs(b.vy) < 10 && Math.abs(b.vx) < 8) b.asleep = true;
-        }
-    }
-    if (vortexEffect) {
-        vortexEffect.duration -= dt;
-        if (vortexEffect.duration <= 0) {
-            vortexEffect = null;
-        } else {
-            for (const b of balls) {
-                if (b.type === 'vortice' || b.held) continue;
-                const dx = vortexEffect.x - b.x;
-                const dy = vortexEffect.y - b.y;
-                const dist = Math.hypot(dx, dy);
-                if (dist < 120) {
-                    const force = (120 - dist) / 120 * 400 * dt;
-                    b.vx += (dx / dist) * force;
-                    b.vy += (dy / dist) * force;
-                }
-            }
-        }
-    }
-    const cell = 64;
-    const grid = new Map();
-    function key(i, j) { return `${i},${j}`; }
-    for (const b of balls) {
-        if (b.held) continue;
-        const i = Math.floor(b.x / cell), j = Math.floor(b.y / cell);
-        for (let ii = i - 1; ii <= i + 1; ii++) {
-            for (let jj = j - 1; jj <= j + 1; jj++) {
-                const k = key(ii, jj);
-                if (!grid.has(k)) grid.set(k, []);
-                grid.get(k).push(b);
-            }
-        }
-    }
-    const pairs = new Set();
-    for (const arr of grid.values()) {
-        for (let a = 0; a < arr.length; a++) {
-            for (let d = a + 1; d < arr.length; d++) {
-                const A = arr[a], B = arr[d];
-                const id = A.id < B.id ? A.id + '|' + B.id : B.id + '|' + A.id;
-                if (pairs.has(id)) continue;
-                pairs.add(id);
-                const dx = B.x - A.x, dy = B.y - A.y;
-                const dist2 = dx * dx + dy * dy;
-                const rr = A.r + B.r;
-                if (dist2 > rr * rr) continue;
-                const dist = Math.sqrt(dist2) || 1;
-                const nx = dx / dist, ny = dy / dist;
-                const overlap = rr - dist;
-                const totalMass = A.m + B.m;
-                const aShare = B.m / totalMass, bShare = A.m / totalMass;
-                A.x -= nx * overlap * aShare;
-                A.y -= ny * overlap * aShare;
-                B.x += nx * overlap * bShare;
-                B.y += ny * overlap * bShare;
-                const rvx = B.vx - A.vx, rvy = B.vy - A.vy;
-                const velAlongNormal = rvx * nx + rvy * ny;
-                if (velAlongNormal < 0) {
-                    const e = Math.min(A.rest, B.rest) * 1.1;
-                    const j = -(1 + e) * velAlongNormal / (1 / A.m + 1 / B.m);
-                    const impX = j * nx, impY = j * ny;
-                    A.vx -= impX / A.m;
-                    A.vy -= impY / A.m;
-                    B.vx += impX / B.m;
-                    B.vy += impY / B.m;
-                    A.squash = B.squash = Math.min(1.5, Math.abs(velAlongNormal) / 400);
-                    A.asleep = B.asleep = false;
-                }
-                if (A.type === B.type && !A.merging && !B.merging && Math.hypot(rvx, rvy) < MERGE_SPEED_THRESHOLD && A.held === B.held) {
-                    if (A.type === 'bomba') {
-                        explode((A.x + B.x) / 2, (A.y + B.y) / 2);
-                        balls = balls.filter(b => b !== A && b !== B);
-                    } else if (A.type === 'detonatrice') {
-                        detonateAllBombs();
-                        balls = balls.filter(b => b !== A && b !== B);
-                    } else if (A.type === 'metal' || A.type === 'oro') {
-                    } else {
-                        mergeBalls(A, B);
-                    }
-                }
-            }
-        }
-    }
-    for (const b of balls) {
-        if (b.asleep && !b.held && b.y - b.r < gameOverY) {
-            endGame();
-            return;
-        }
-    }
-    checkCrush();
-    for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.t += dt;
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        p.vy += 600 * dt;
-        if (p.type === 'star') p.rotation += 0.2;
-        if (p.t > p.life) particles.splice(i, 1);
-        if (particles.length > MAX_PARTICLES) particles.splice(0, particles.length - MAX_PARTICLES);
-    }
-}
+  if (paused || gameOver) return;
 
-function endGame() {
-  if (gameOver) return;
-  gameOver = true;
-  if (score > bestScore) {
-    bestScore = score;
-    localStorage.setItem('ballDropBest', bestScore);
+  // aggiorna gravità / linea pericolo come prima
+  G = BASE_G + (level - 1) * 100;
+  gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10);
+
+  // 🔥 CORREZIONE: RIMUOVI IL "continue" PER LE PALLE ASLEEP
+  for (const b of balls) {
+    // Inizializza timer se mancante
+    if (typeof b.dangerTimer !== 'number') b.dangerTimer = 0;
+
+    // 🔥 APPLICA FISICA SOLO SE NON È TENUTA E NON È TROPPO FERMA
+    if (!b.held && !b.asleep) {
+      // integrazione fisica (sub-stepping per evitare tunneling)
+      b.vy += G * dt;
+      b.vx *= (1 - FRICTION);
+
+      const maxDist = Math.max(Math.abs(b.vx * dt), Math.abs(b.vy * dt));
+      const stepSize = Math.max(1, b.r * 0.4);
+      const steps = Math.min(8, Math.max(1, Math.ceil(maxDist / stepSize)));
+      const hdt = dt / steps;
+
+      for (let s = 0; s < steps; s++) {
+        b.x += b.vx * hdt;
+        b.y += b.vy * hdt;
+        collideWithWalls(b);
+      }
+
+      hardClamp(b);
+
+      // 🔥 CORREZIONE: LOGICA SLEEP MIGLIORATA
+      const speed = Math.hypot(b.vx, b.vy);
+      if (speed < 5 && b.y >= H - 20 - b.r) {
+        // Solo se è quasi ferma E vicino al fondo
+        b.asleep = true;
+        b.vx = 0;
+        b.vy = 0;
+      }
+    }
+
+    // ----- LOGICA: timer per la zona rossa -----
+    const topOfBall = b.y - b.r;
+    const inDangerZone = topOfBall <= gameOverY;
+
+    // velocità reale (modulo)
+    const speed = Math.hypot(b.vx, b.vy);
+
+    if (inDangerZone && !b.held) {
+      if (speed <= DANGER_STILL_SPEED) {
+        b.dangerTimer += dt;
+        if (b.dangerTimer > 0.2) {
+          floatText((DANGER_TIME_LIMIT - b.dangerTimer).toFixed(1) + 's', b.x, b.y - b.r - 12);
+        }
+
+        if (b.dangerTimer >= DANGER_TIME_LIMIT) {
+          triggerGameOver(b);
+          return;
+        }
+      } else {
+        b.dangerTimer = 0;
+      }
+    } else {
+      b.dangerTimer = 0;
+    }
   }
-  finalScoreEl.textContent = `PUNTEGGIO: ${score}`;
-  bestScoreEl.textContent = `RECORD: ${bestScore}`;
-  overEl.classList.remove('hidden');
-  setTimeout(() => overEl.classList.add('visible'), 100);
+
+  // Vortex effect - 🔥 CORREZIONE: RISVEGLIA LE PALLE
+  if (vortexEffect) {
+    vortexEffect.duration -= dt;
+    if (vortexEffect.duration <= 0) {
+      vortexEffect = null;
+    } else {
+      for (const b of balls) {
+        if (b.type === 'vortice' || b.held) continue;
+        const dx = vortexEffect.x - b.x;
+        const dy = vortexEffect.y - b.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 120) {
+          const force = (120 - dist) / 120 * 400 * dt;
+          b.vx += (dx / dist) * force;
+          b.vy += (dy / dist) * force;
+          // 🔥 RISVEGLIA LA PALLA SE È IN VORTICE
+          b.asleep = false;
+        }
+      }
+    }
+  }
+
+  // Collisioni tra palle - 🔥 CORREZIONE: RISVEGLIA LE PALLE IN COLLISIONE
+  const cell = 64;
+  const grid = new Map();
+  function key(i, j) { return `${i},${j}`; }
+  
+  for (const b of balls) {
+    if (b.held) continue;
+    const i = Math.floor(b.x / cell), j = Math.floor(b.y / cell);
+    for (let ii = i - 1; ii <= i + 1; ii++) {
+      for (let jj = j - 1; jj <= j + 1; jj++) {
+        const k = key(ii, jj);
+        if (!grid.has(k)) grid.set(k, []);
+        grid.get(k).push(b);
+      }
+    }
+  }
+
+  const pairs = new Set();
+  for (const arr of grid.values()) {
+    for (let a = 0; a < arr.length; a++) {
+      for (let d = a + 1; d < arr.length; d++) {
+        const A = arr[a], B = arr[d];
+        const id = A.id < B.id ? A.id + '|' + B.id : B.id + '|' + A.id;
+        if (pairs.has(id)) continue;
+        pairs.add(id);
+        
+        const dx = B.x - A.x, dy = B.y - A.y;
+        const dist2 = dx * dx + dy * dy;
+        const rr = A.r + B.r;
+        if (dist2 > rr * rr) continue;
+        
+        const dist = Math.sqrt(dist2) || 1;
+        const nx = dx / dist, ny = dy / dist;
+        const overlap = rr - dist;
+        const totalMass = A.m + B.m;
+        const aShare = B.m / totalMass, bShare = A.m / totalMass;
+        
+        A.x -= nx * overlap * aShare;
+        A.y -= ny * overlap * aShare;
+        B.x += nx * overlap * bShare;
+        B.y += ny * overlap * bShare;
+        
+        const rvx = B.vx - A.vx, rvy = B.vy - A.vy;
+        const velAlongNormal = rvx * nx + rvy * ny;
+        
+        if (velAlongNormal < 0) {
+          const e = Math.min(A.rest, B.rest) * 1.1;
+          const j = -(1 + e) * velAlongNormal / (1 / A.m + 1 / B.m);
+          const impX = j * nx, impY = j * ny;
+          
+          A.vx -= impX / A.m;
+          A.vy -= impY / A.m;
+          B.vx += impX / B.m;
+          B.vy += impY / B.m;
+          
+          A.squash = B.squash = Math.min(1.5, Math.abs(velAlongNormal) / 400);
+          
+          // 🔥 IMPORTANTE: RISVEGLIA LE PALLE IN COLLISIONE
+          A.asleep = false;
+          B.asleep = false;
+        }
+        
+        if (A.type === B.type && !A.merging && !B.merging && Math.hypot(rvx, rvy) < MERGE_SPEED_THRESHOLD && A.held === B.held) {
+          if (A.type === 'bomba') {
+            explode((A.x + B.x) / 2, (A.y + B.y) / 2);
+            balls = balls.filter(b => b !== A && b !== B);
+          } else if (A.type === 'detonatrice') {
+            detonateAllBombs();
+            balls = balls.filter(b => b !== A && b !== B);
+          } else if (A.type === 'metal' || A.type === 'oro') {
+            // Non fare nulla per metal e oro
+          } else {
+            mergeBalls(A, B);
+          }
+        }
+      }
+    }
+  }
+  
+  // Check game over
+  for (const b of balls) {
+    if (b.dangerTimer >= DANGER_TIME_LIMIT) {
+      triggerGameOver(b);
+      return;
+    }
+  }
+  
+  // Check crush
+  checkCrush();
+
+  // Update particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.t += dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 600 * dt;
+    if (p.type === 'star') p.rotation += 0.2;
+    if (p.t > p.life) particles.splice(i, 1);
+    if (particles.length > MAX_PARTICLES) particles.splice(0, particles.length - MAX_PARTICLES);
+  }
 }
 
 function mergeBalls(A, B) {
@@ -1752,6 +2143,7 @@ function draw() {
 let acc = 0;
 let last = performance.now();
 const dtFixed = 1 / 120;
+
 function loop() {
   const now = performance.now();
   let dt = (now - last) / 1000;
@@ -1765,6 +2157,666 @@ function loop() {
   draw();
   requestAnimationFrame(loop);
 }
+// MULTIPLAYER
+function showMultiplayerLobby() {
+  let html = `
+    <div class="multiplayer-overlay">
+      <div class="lobby">
+        <h2>Multiplayer</h2>
+        <div class="lobby-buttons">
+          <button onclick="multiplayer.createRoom()">Crea Stanza</button>
+          <button onclick="showJoinRoomInput()">Unisciti a Stanza</button>
+          <button onclick="startHotSeatGame()">Hot Seat</button>
+          <button onclick="document.getElementById('multiplayerOverlay').remove(); showGameModes();">Indietro</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'multiplayerOverlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  `;
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+
+function showJoinRoomInput() {
+  const roomId = prompt("Inserisci il codice stanza:");
+  if (roomId) {
+    multiplayer.joinRoom(roomId);
+  }
+}
+
+function startHotSeatGame() {
+  const hotSeat = new HotSeatMultiplayer({
+    resetGame,
+    score: 0,
+    level: 1,
+    balls: [],
+    update: () => {},
+    spawnBall: (x, y, type) => {
+      const ball = spawnBall(x, y, type);
+      balls.push(ball);
+      return ball;
+    }
+  });
+  hotSeat.startGame();
+}
+
+// Classe HotSeatMultiplayer (come da codice precedente)
+class HotSeatMultiplayer {
+  constructor(gameInstance) {
+    this.game = gameInstance;
+    this.players = [];
+    this.currentPlayerIndex = 0;
+    this.scores = new Map();
+  }
+  
+  addPlayer(name) {
+    const player = {
+      id: this.generateId(),
+      name: name,
+      color: this.getRandomColor()
+    };
+    
+    this.players.push(player);
+    this.scores.set(player.id, 0);
+    
+    return player;
+  }
+  
+  generateId() {
+    return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+  }
+  
+  getRandomColor() {
+    const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+  
+  startGame() {
+    if (this.players.length < 2) {
+      this.addPlayer('Giocatore 1');
+      this.addPlayer('Giocatore 2');
+    }
+    
+    this.currentPlayerIndex = 0;
+    this.showTurnIndicator();
+    this.game.resetGame();
+  }
+  
+  nextTurn() {
+    const currentPlayer = this.players[this.currentPlayerIndex];
+    this.scores.set(currentPlayer.id, this.game.score);
+    
+    this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+    
+    this.game.resetGame();
+    this.showTurnIndicator();
+  }
+  
+  showTurnIndicator() {
+    const player = this.players[this.currentPlayerIndex];
+    floatText(`Tocca a ${player.name}`, W/2, H/2);
+    this.showHotSeatHUD();
+  }
+  
+  showHotSeatHUD() {
+    const hudHTML = this.players.map((player, index) => `
+      <div class="player-score ${index === this.currentPlayerIndex ? 'active' : ''}">
+        ${player.name}: ${this.scores.get(player.id) || 0}
+      </div>
+    `).join('');
+    
+    let hud = document.getElementById('hotSeatHUD');
+    if (!hud) {
+      hud = document.createElement('div');
+      hud.id = 'hotSeatHUD';
+      hud.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: rgba(0,0,0,0.7);
+        padding: 10px;
+        border-radius: 10px;
+        color: white;
+        z-index: 100;
+      `;
+      document.body.appendChild(hud);
+    }
+    
+    hud.innerHTML = hudHTML;
+  }
+  
+  endGame() {
+    const winner = this.players.reduce((prev, current) => 
+      (this.scores.get(current.id) > this.scores.get(prev.id)) ? current : prev
+    );
+    
+    floatText(`Vince ${winner.name}!`, W/2, H/2);
+  }
+}
+
+// MISSIONI
+let missions = [
+  { id: 'fuse_3_golf', text: 'Fai fondere 3 palle da golf', completed: false, target: 3, current: 0 },
+  { id: 'fuse_2_vetro', text: 'Fai fondere 2 palle di vetro', completed: false, target: 2, current: 0 },
+  { id: 'drop_10_bombs', text: 'Lascia cadere 10 bombe', completed: false, target: 10, current: 0 },
+  { id: 'score_5000', text: 'Raggiungi 5000 punti', completed: false, target: 5000, current: 0 }
+];
+
+function showMissionsOverlay() {
+  let html = `
+    <div class="missions-content">
+      <h3>MISSIONI</h3>
+  `;
+  for (const m of missions) {
+    html += `
+      <div class="mission-item ${m.completed ? 'completed' : m.current >= m.target ? 'completed' : ''}">
+        ${m.text} (${m.current}/${m.target})
+      </div>
+    `;
+  }
+  html += `<button class="restart" onclick="startGame(); document.getElementById('missionsOverlay').remove();">INIZIA</button>`;
+  html += `<button class="menu-btn menu-back" onclick="document.getElementById('missionsOverlay').remove(); showGameModes();">INDIETRO</button>`;
+  html += `</div>`;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'missionsOverlay';
+  overlay.className = 'overlay visible';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+
+function showGameModes() {
+  screenMain.classList.remove('active');
+  screenGameModes.classList.add('active');
+}
+
+function updateMissions(action, data) {
+  for (const m of missions) {
+    if (m.completed) continue;
+
+    if (m.id === 'fuse_3_golf' && action === 'merge' && data.type === 'golf') {
+      m.current++;
+      if (m.current >= m.target) m.completed = true;
+    }
+    if (m.id === 'fuse_2_vetro' && action === 'merge' && data.type === 'vetro') {
+      m.current++;
+      if (m.current >= m.target) m.completed = true;
+    }
+    if (m.id === 'drop_10_bombs' && action === 'spawn' && data.type === 'bomba') {
+      m.current++;
+      if (m.current >= m.target) m.completed = true;
+    }
+    if (m.id === 'score_5000' && action === 'score' && score >= m.target) {
+      m.current = score;
+      m.completed = true;
+    }
+  }
+}
+
+// Classe BallDropMultiplayer (come da codice precedente)
+class BallDropMultiplayer {
+    constructor(gameInstance) {
+        this.game = gameInstance;
+        this.connections = new Map();
+        this.players = new Map();
+        this.localPlayer = {
+            id: this.generateId(),
+            name: 'Player_' + Math.floor(Math.random() * 1000),
+            score: 0,
+            ready: false
+        };
+        
+        this.roomId = null;
+        this.isHost = false;
+        this.dataChannel = null;
+        this.peer = null;
+        
+        this.setupEventListeners();
+    }
+
+    generateId() {
+        return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    }
+
+    setupEventListeners() {
+        window.addEventListener('storage', this.handleStorageEvent.bind(this));
+        window.addEventListener('hashchange', this.handleHashChange.bind(this));
+    }
+
+    handleHashChange() {
+        const hash = window.location.hash.substring(1);
+        if (hash && !this.roomId) {
+            this.joinRoom(hash);
+        }
+    }
+
+    createRoom(roomName = 'BallDrop Room') {
+        this.roomId = Math.random().toString(36).substr(2, 8);
+        this.isHost = true;
+        
+        window.location.hash = this.roomId;
+        
+        this.broadcastSignal({
+            type: 'room_created',
+            roomId: this.roomId,
+            roomName: roomName,
+            host: this.localPlayer.id,
+            timestamp: Date.now()
+        });
+        
+        this.setupPeerConnection();
+        this.showLobby();
+        
+        return this.roomId;
+    }
+
+    joinRoom(roomId) {
+        this.roomId = roomId;
+        window.location.hash = roomId;
+        
+        this.broadcastSignal({
+            type: 'join_request',
+            roomId: roomId,
+            player: this.localPlayer,
+            timestamp: Date.now()
+        });
+        
+        this.setupPeerConnection();
+    }
+
+    setupPeerConnection() {
+        this.peer = new Peer(this.localPlayer.id);
+        
+        this.peer.on('open', (id) => {
+            console.log('Peer connesso:', id);
+        });
+        
+        this.peer.on('connection', (conn) => {
+            this.setupDataChannel(conn);
+        });
+        
+        this.peer.on('error', (err) => {
+            console.error('Peer error:', err);
+            this.fallbackToHotSeat();
+        });
+    }
+
+    setupDataChannel(conn) {
+        conn.on('open', () => {
+            console.log('Connesso a:', conn.peer);
+            this.connections.set(conn.peer, conn);
+            this.players.set(conn.peer, { name: 'Opponent', score: 0 });
+            
+            if (this.isHost) {
+                this.syncFullGameState();
+            }
+        });
+        
+        conn.on('data', (data) => {
+            this.handleGameData(data);
+        });
+        
+        conn.on('close', () => {
+            this.connections.delete(conn.peer);
+            this.players.delete(conn.peer);
+            this.showMessage('Giocatore disconnesso');
+        });
+        
+        this.dataChannel = conn;
+    }
+
+    connectToPlayer(playerId) {
+        const conn = this.peer.connect(playerId);
+        this.setupDataChannel(conn);
+    }
+
+    broadcastSignal(signal) {
+        const signalData = {
+            ...signal,
+            from: this.localPlayer.id,
+            roomId: this.roomId
+        };
+        
+        localStorage.setItem('ballDrop_signal', JSON.stringify(signalData));
+        setTimeout(() => localStorage.removeItem('ballDrop_signal'), 5000);
+    }
+
+    handleStorageEvent(event) {
+        if (event.key !== 'ballDrop_signal' || !event.newValue) return;
+        
+        try {
+            const signal = JSON.parse(event.newValue);
+            if (signal.roomId !== this.roomId) return;
+            
+            this.processSignal(signal);
+        } catch (e) {
+            console.error('Errore parsing signal:', e);
+        }
+    }
+
+    processSignal(signal) {
+        switch (signal.type) {
+            case 'room_created':
+                if (!this.isHost) {
+                    this.showRoomAvailable(signal);
+                }
+                break;
+                
+            case 'join_request':
+                if (this.isHost && signal.player.id !== this.localPlayer.id) {
+                    this.approveJoinRequest(signal);
+                }
+                break;
+                
+            case 'join_approved':
+                if (!this.isHost && signal.to === this.localPlayer.id) {
+                    this.connectToPlayer(signal.host);
+                }
+                break;
+                
+            case 'game_start':
+                this.startMultiplayerGame();
+                break;
+        }
+    }
+
+    approveJoinRequest(signal) {
+        this.broadcastSignal({
+            type: 'join_approved',
+            to: signal.player.id,
+            host: this.localPlayer.id,
+            roomId: this.roomId
+        });
+        
+        this.connectToPlayer(signal.player.id);
+    }
+
+    syncFullGameState() {
+        if (!this.dataChannel) return;
+        
+        const gameState = {
+            type: 'full_sync',
+            balls: this.game.balls.map(b => this.serializeBall(b)),
+            score: this.game.score,
+            level: this.game.level,
+            players: Array.from(this.players.values()),
+            timestamp: Date.now()
+        };
+        
+        this.sendData(gameState);
+    }
+
+    syncGameUpdate() {
+        if (!this.dataChannel) return;
+        
+        const update = {
+            type: 'game_update',
+            balls: this.game.balls.map(b => this.serializeBall(b)),
+            score: this.game.score,
+            level: this.game.level,
+            timestamp: Date.now()
+        };
+        
+        this.sendData(update);
+    }
+
+    syncPlayerAction(action, data) {
+        this.sendData({
+            type: 'player_action',
+            action: action,
+            data: data,
+            player: this.localPlayer.id,
+            timestamp: Date.now()
+        });
+    }
+
+    serializeBall(ball) {
+        return {
+            x: Math.round(ball.x * 100) / 100,
+            y: Math.round(ball.y * 100) / 100,
+            type: ball.type,
+            vx: Math.round(ball.vx * 100) / 100,
+            vy: Math.round(ball.vy * 100) / 100,
+            r: ball.r,
+            asleep: ball.asleep
+        };
+    }
+
+    deserializeBall(data) {
+        const ball = new Ball(data.x, data.y, data.type);
+        ball.vx = data.vx;
+        ball.vy = data.vy;
+        ball.asleep = data.asleep;
+        return ball;
+    }
+
+    sendData(data) {
+        if (this.dataChannel && this.dataChannel.readyState === 'open') {
+            this.dataChannel.send(JSON.stringify(data));
+        }
+    }
+
+    handleGameData(data) {
+        try {
+            const gameData = JSON.parse(data);
+            this.processGameData(gameData);
+        } catch (e) {
+            console.error('Errore parsing game data:', e);
+        }
+    }
+
+    processGameData(gameData) {
+        switch (gameData.type) {
+            case 'full_sync':
+                this.applyFullSync(gameData);
+                break;
+                
+            case 'game_update':
+                this.applyGameUpdate(gameData);
+                break;
+                
+            case 'player_action':
+                this.handlePlayerAction(gameData);
+                break;
+                
+            case 'score_update':
+                this.updatePlayerScore(gameData);
+                break;
+        }
+    }
+
+    applyFullSync(data) {
+        this.game.balls = data.balls.map(b => this.deserializeBall(b));
+        this.game.score = data.score;
+        this.game.level = data.level;
+        
+        data.players.forEach(player => {
+            this.players.set(player.id, player);
+        });
+    }
+
+    applyGameUpdate(data) {
+        data.balls.forEach((ballData, index) => {
+            if (index < this.game.balls.length) {
+                const ball = this.game.balls[index];
+                ball.x = ballData.x;
+                ball.y = ballData.y;
+                ball.vx = ballData.vx;
+                ball.vy = ballData.vy;
+            }
+        });
+        
+        this.game.score = data.score;
+        this.game.level = data.level;
+    }
+
+    startCoopMode() {
+        this.gameMode = 'coop';
+        this.syncInterval = setInterval(() => {
+            this.syncGameUpdate();
+        }, 100);
+        
+        this.showMessage('Modalità Cooperativa Attiva!');
+    }
+
+    startVersusMode() {
+        this.gameMode = 'versus';
+        this.setupVersusUI();
+        this.showMessage('Modalità Versus Attiva!');
+    }
+
+    startDuelMode() {
+        this.gameMode = 'duel';
+        this.duelState = {
+            startTime: Date.now(),
+            timeLimit: 120000,
+            scores: new Map()
+        };
+        
+        this.setupDuelUI();
+        this.showMessage('Duel Started!');
+    }
+
+    showLobby() {
+        const lobbyHTML = `
+            <div class="multiplayer-overlay">
+                <div class="lobby">
+                    <h2>Stanza Multiplayer</h2>
+                    <div class="room-info">
+                        <p>Codice Stanza: <strong>${this.roomId}</strong></p>
+                        <p>Giocatori: <span id="playerCount">1</span>/4</p>
+                    </div>
+                    <div class="player-list" id="playerList">
+                        <div class="player">${this.localPlayer.name} (Tu)</div>
+                    </div>
+                    <div class="lobby-buttons">
+                        <button onclick="multiplayer.startCoopMode()">Cooperative</button>
+                        <button onclick="multiplayer.startVersusMode()">Versus</button>
+                        <button onclick="multiplayer.startDuelMode()">1v1 Duel</button>
+                        <button onclick="multiplayer.leaveRoom()">Esci</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        this.showOverlay(lobbyHTML);
+    }
+
+    showOverlay(html) {
+        let overlay = document.getElementById('multiplayerOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'multiplayerOverlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+            document.body.appendChild(overlay);
+        }
+        
+        overlay.innerHTML = html;
+    }
+
+    hideOverlay() {
+        const overlay = document.getElementById('multiplayerOverlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+
+    showMessage(text) {
+        floatText(text, W/2, H/2);
+    }
+
+    fallbackToHotSeat() {
+        this.showMessage('Connessione fallita - Modalità Hot Seat');
+        
+        this.hotSeatMode = {
+            players: [this.localPlayer],
+            currentPlayer: 0,
+            turn: 0
+        };
+        
+        this.startHotSeatGame();
+    }
+
+    startHotSeatGame() {
+        this.showHotSeatUI();
+        this.game.resetGame();
+    }
+
+    leaveRoom() {
+        if (this.dataChannel) {
+            this.dataChannel.close();
+        }
+        
+        if (this.peer) {
+            this.peer.destroy();
+        }
+        
+        this.connections.clear();
+        this.players.clear();
+        
+        window.location.hash = '';
+        this.hideOverlay();
+        
+        this.showMessage('Hai lasciato la stanza');
+    }
+
+    integrateWithGame() {
+        const originalSpawn = this.game.spawnBall;
+        this.game.spawnBall = (x, y, type) => {
+            const ball = originalSpawn.call(this.game, x, y, type);
+            if (ball && this.dataChannel) {
+                this.syncPlayerAction('ball_spawn', { x, y, type });
+            }
+            return ball;
+        };
+        
+        const originalUpdate = this.game.update;
+        this.game.update = (dt) => {
+            originalUpdate.call(this.game, dt);
+            
+            if (this.gameMode === 'coop' && this.lastSync + 100 < Date.now()) {
+                this.syncGameUpdate();
+                this.lastSync = Date.now();
+            }
+        };
+    }
+}
+
+// Inizializza multiplayer
+const multiplayer = new BallDropMultiplayer({
+  resetGame,
+  score: 0,
+  level: 1,
+  balls: [],
+  update: () => {},
+  spawnBall: (x, y, type) => {
+    const ball = spawnBall(x, y, type);
+    balls.push(ball);
+    return ball;
+  }
+});
+
 
 loop();
 })();
