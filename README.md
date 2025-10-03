@@ -74,11 +74,11 @@ Il gioco è realizzato in un unico file HTML per semplicità e portabilità. Non
 
 ## Gioca ora
 
-Puoi giocare a Ball Drop scaricando l'apk direttamente da GitHub Releases [Link dell'ultima versione disponibile](https://github.com/Mirko-linux/Ball-Drop/releases/tag/Ball-Drop_1.5), in alternativa puoi giocare al gioco direttamente dal browser sulla pagina itch.io di Ball Drop [Link della pagina di Itch.io](https://mirkodonatogames.itch.io/ball-drop)
+Puoi giocare a Ball Drop scaricando l'apk direttamente da GitHub Releases [Link dell'ultima versione disponibile](https://github.com/Mirko-linux/Ball-Drop/releases/tag/Ball-Drop_2.0), in alternativa puoi giocare al gioco direttamente dal browser sulla pagina itch.io di Ball Drop [Link della pagina di Itch.io](https://mirkodonatogames.itch.io/ball-drop)
 
 ## Disclaimer
 
-Alcune parti del codice sorgente sono state realizzate mediante l'uso dell'Intelligenza Artificiale, gli effetti sonori sono stati realizzati con il modello [_Sound Forge_](huggingface.co/spaces/mirkodonato08/arcadiaai-soundforge), il codice sorgente è stato scritto dal modello [_Qwen_](https://chat.qwen.ai/) di Alibaba Cloud
+Alcune parti del codice sorgente sono state realizzate mediante l'uso dell'Intelligenza Artificiale, è stata realizzata con il modello [_Sound Forge_](huggingface.co/spaces/mirkodonato08/arcadiaai-soundforge), il codice sorgente è stato scritto dal modello [_Qwen_](https://chat.qwen.ai/) di Alibaba Cloud, gli assets sono stati creati da [_Microsoft Copilot_](https://copilot.microsoft.com/)
 
 ## Licenze
 Il codice sorgente di Ball Drop è rilasciato sotto la [Licenza MIT](./LICENSE), tutti gli assets usati e la colonna sonora sono rilasciati sotto la licenza [CC BY 4.0](./LICENSE-CC-BY) eccetto i badge dei vari store i cui diritti rimangono a loro
