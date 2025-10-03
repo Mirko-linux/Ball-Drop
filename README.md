@@ -22,6 +22,14 @@
 </p>
 Ball Drop è un semplice videogioco open source di tipo Merge game, in cui devi far cadere palle sportive, unirle a coppie e farle evolvere da piccole a giganti! Più le unisci, più diventano grandi, più punti fai, ma occhio a non superare la linea rossa sennò game over.
 
+## Guida ufficiale
+
+- 🇮🇹 Italiano (questa pagina)
+- 🇬🇧 [English](docs/en.md)
+- 🇫🇷 [Français](docs/fr.md)
+- 🇪🇸 [Español](docs/es.md)
+- 🇷🇺 [Русский](docs/ru.md)
+- 🇩🇪 [Deutsch](docs/de.md)
 
 ## Funzionamento  
 Il gioco si basa su una meccanica semplice ma coinvolgente: ogni volta che fai clic (o tocco su mobile), una palla cade dal cielo. Quando due palle dello stesso tipo si toccano, si fondono in una palla più grande del livello successivo, da golf a palla medica. Il punteggio aumenta a ogni fusione.
