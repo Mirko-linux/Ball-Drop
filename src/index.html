@@ -1,0 +1,2673 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
+  <title>Ball Drop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- SCHERMATA DI CARICAMENTO -->
+  <div id="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">CARICAMENTO IN CORSO...</div>
+    <div class="loading-progress">
+      <div class="loading-bar"></div>
+    </div>
+  </div>
+
+  <!-- MENU INIZIALE -->
+  <div id="menu-overlay" role="dialog" aria-label="Menu Principale">
+    <!-- SCHERMATA PRINCIPALE -->
+    <div class="menu-screen active" id="screen-main" aria-hidden="false">
+      <div class="menu-title">BALL DROP</div>
+      <button class="menu-btn" id="btnPlay" type="button">🎮 GIOCA</button>
+      <button class="menu-btn" id="btnOptions" type="button">⚙️ OPZIONI</button>
+      <button class="menu-btn" id="btnCredits" type="button">📜 CREDITI</button>
+    </div>
+
+    <!-- SCHERMATA MODALITÀ DI GIOCO -->
+    <div class="menu-screen" id="screen-game-modes" aria-hidden="true">
+      <div class="menu-title">MODALITÀ</div>
+      <button class="menu-btn" id="btnModeClassic" type="button">🎯 CLASSICA</button>
+      <button class="menu-btn" id="btnModeMissions" type="button">🎯 MISSIONI</button>
+      <button class="menu-btn" id="btnModeMultiplayer" type="button">🎯 MULTIPLAYER</button>
+      <button class="menu-btn menu-back" id="btnBackModes" type="button">← INDIETRO</button>
+    </div>
+
+    <!-- SCHERMATA OPZIONI -->
+    <div class="menu-screen" id="screen-options" aria-hidden="true">
+      <div class="menu-title">OPZIONI</div>
+
+      <div class="settings-row">
+        <span>Audio</span>
+        <button class="toggle-btn" id="btnToggleAudio" type="button">🔊 ON</button>
+      </div>
+
+      <div class="settings-row">
+        <span>Lingua</span>
+        <select id="langSelect" class="toggle-btn" style="width: auto; padding: 6px 12px;">
+          <option value="it">Italiano</option>
+          <option value="sc">Sicilianu</option>
+        </select>
+      </div>
+
+      <div class="settings-row">
+        <span>Tema</span>
+        <select id="themeSelect" class="toggle-btn" style="width: auto; padding: 6px 12px;">
+          <option value="green">Verde</option>
+          <option value="fire">Fuoco</option>
+          <option value="night">Notte</option>
+        </select>
+      </div>
+
+      <div class="settings-row">
+        <span>Sfondo</span>
+        <select id="bgSelect" class="toggle-btn" style="width: auto; padding: 6px 12px;">
+          <option value="erba">Erba</option>
+          <option value="legno">Legno</option>
+          <option value="scacchiera">Scacchiera</option>
+        </select>
+      </div>
+
+      <div class="settings-row">
+        <span>Trucchi</span>
+        <button class="toggle-btn off" id="btnEnableCheats" type="button" aria-pressed="false">OFF</button>
+      </div>
+
+      <button class="menu-btn menu-back" id="btnBackOptions" type="button">← INDIETRO</button>
+    </div>
+
+    <!-- SCHERMATA CREDITI -->
+    <div class="menu-screen" id="screen-credits" aria-hidden="true">
+      <div class="menu-title">CREDITI</div>
+      <p class="credits-text">
+        Realizzato con ❤️ da <strong>Mirko Yuri Donato</strong><br>
+        Il gioco presenta parti realizzate mediante l'uso dell'intelligenza artificiale, principalmente i modelli GPT-5, Qwen 3 di Alibaba Cloud, DeepSeek e Microsoft Copilot.<br>
+        Il codice sorgente è rilasciato sotto la licenza MIT, mentre gli assets sono sotto la Creative Commons Attribution 4.0 International.
+      </p>
+      <button class="menu-btn menu-back" id="btnBackCredits" type="button">← INDIETRO</button>
+    </div>
+  </div>
+
+  <!-- MENU PAUSA -->
+  <div id="pauseMenu" class="overlay hidden" role="dialog" aria-hidden="true" aria-label="Menu Pausa">
+    <div class="pause-content">
+      <div class="pause-title">PAUSA</div>
+      <button class="pause-btn" id="btnResume" type="button">RIPRENDI</button>
+      <button class="pause-btn" id="btnRestartPause" type="button">RIAVVIA</button>
+      <button class="pause-btn" id="btnOptionsPause" type="button">OPZIONI</button>
+      <button class="pause-btn" id="btnQuit" type="button">ESCI</button>
+      <button class="pause-close" id="btnClosePause" type="button" aria-label="Chiudi">×</button>
+    </div>
+  </div>
+
+  <!-- SELEZIONE JOLLY -->
+  <div id="jollySelector" class="overlay hidden" role="dialog" aria-hidden="true" aria-label="Seleziona Jolly">
+    <div class="selector-content">
+      <h3>SELEZIONA PALLA</h3>
+      <div class="selector-controls">
+        <button class="arrow-btn" id="btnPrev" type="button">←</button>
+        <div class="preview-box">
+          <div class="preview-name" id="previewName">Vortice</div>
+          <canvas id="previewCanvas" width="80" height="80" aria-hidden="true"></canvas>
+        </div>
+        <button class="arrow-btn" id="btnNext" type="button">→</button>
+      </div>
+      <button class="restart" id="btnSelectJolly" type="button">SELEZIONA</button>
+    </div>
+  </div>
+
+  <!-- HUD (nascosto finché non si gioca) -->
+  <div class="hud" role="status" aria-hidden="true">
+    <div class="score" id="score">PUNTEGGIO 000000</div>
+    <div class="info">
+      <div class="next">
+        <span>Prossimo</span>
+        <canvas id="nextIcon" width="48" height="48" aria-hidden="true"></canvas>
+      </div>
+      <div class="level" id="level">LIVELLO 1</div>
+      <div class="powerups" id="powerups">
+        <div class="powerup" id="jolly" style="display: none;">
+          <div class="powerup-icon jolly-icon"></div>
+          <span>Jolly</span>
+        </div>
+        <div class="powerup" id="fuoco" style="display: none;">
+          <div class="powerup-icon fuoco-icon"></div>
+          <span>Fuoco</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <button class="btn" id="pauseBtn" aria-label="Pausa" type="button">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <circle cx="12" cy="12" r="9" stroke-opacity="0.3"/>
+          <path d="M10 8v8M14 8v8" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="btn" id="inventoryBtn" aria-label="Inventario" style="display: none;" type="button">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M4 7v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V7H4zm0-2h16v2H4V5zm4 4h8v2H8V9z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="wrap">
+    <canvas id="game" width="480" height="720" aria-label="Campo di gioco"></canvas>
+    <div class="center">
+      <div id="gameOver" class="overlay hidden" role="dialog" aria-hidden="true" aria-label="Game Over">
+        <div class="title">GAME OVER</div>
+        <div class="score-final" id="finalScore">PUNTEGGIO: 0</div>
+        <div class="score-final" id="bestScore">RECORD: 0</div>
+        <button class="restart" id="restartBtn" type="button">Rigioca</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint" role="status">Tieni premuto per "agganciare" la palla, trascina nella fascia alta e lascia per farla cadere!</div>
+
+  <script>
+(() => {
+  /* ==========================
+     CONFIGURAZIONE
+  ========================== */
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Sfondo erboso
+  const grass = document.createElement('canvas');
+  grass.width = grass.height = 128;
+  const gctx = grass.getContext('2d');
+  gctx.fillStyle = '#1a4d2a';
+  gctx.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 200; i++) {
+    gctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.06})`;
+    gctx.fillRect(Math.random() * 128, Math.random() * 128, 1, 1);
+  }
+  for (let i = 0; i < 40; i++) {
+    gctx.strokeStyle = `rgba(255,255,255,${Math.random() * 0.1})`;
+    gctx.lineWidth = 0.5;
+    gctx.beginPath();
+    gctx.moveTo(0, i * 3 + Math.random() * 2);
+    gctx.lineTo(128, i * 3 + Math.random() * 2);
+    gctx.stroke();
+  }
+  const grassPat = ctx.createPattern(grass, 'repeat');
+
+  // Tipi di palle
+  const TYPES = [
+    'golf','pingpong','squash','lacrosse','tennis','baseball','cricket','pallamano','pallavolo','basket','waterpolo','calcio','pallamedica',
+    'bomba', 'vetro', 'vortice', 'detonatrice', 'metal', 'oro'
+  ];
+  const SCORE_STEP = [10,20,40,80,120,180,260,360,520,700,900,1000];
+  const RADII = {
+    golf:18, pingpong:20, squash:22, lacrosse:24, tennis:26, baseball:28, cricket:30, pallamano:32, pallavolo:36, basket:40, waterpolo:42, calcio:44, pallamedica:50,
+    bomba: 30, vetro: 28, vortice: 32, detonatrice: 28, metal: 26, oro: 26
+  };
+  const MASSE = {
+    golf:0.046, pingpong:0.0027, squash:0.024, lacrosse:0.145, tennis:0.058, baseball:0.145, cricket:0.163, pallamano:0.475, pallavolo:0.27, basket:0.62, waterpolo:0.45, calcio:0.43, pallamedica:3.0,
+    bomba: 0.8, vetro: 0.1, vortice: 0.3, detonatrice: 0.2, metal: 0.6, oro: 0.5
+  };
+  const REST = {
+    golf:.75, pingpong:.88, squash:.7, lacrosse:.65, tennis:.8, baseball:.55, cricket:.55, pallamano:.5, pallavolo:.65, basket:.75, waterpolo:.6, calcio:.72, pallamedica:.35,
+    bomba: 0.4, vetro: 0.9, vortice: 0.6, detonatrice: 0.7, metal: 0.3, oro: 0.2
+  };
+  const FRICTION = 0.004;
+  const MERGE_SPEED_THRESHOLD = 100;
+
+class Ball {
+  constructor(x, y, type, sprite) {
+    this.id = Math.random().toString(36).slice(2);
+    this.x = x;
+    this.y = y;
+    this.type = type;
+    this.r = RADII[type];
+    this.m = MASSE[type];
+    this.rest = REST[type];
+    this.sprite = sprite;
+    this.vx = 0;
+    this.vy = 0;
+    this.ax = 0;
+    this.ay = 0;
+    this.held = false;
+    this.asleep = false;
+    this.squash = 0;
+    this.merging = false;
+  }
+}
+
+  // Meccaniche di livello
+  let level = 1;
+  const LEVEL_THRESHOLD = 500;
+  const BASE_G = 1200;
+  let G = BASE_G;
+  const BASE_DANGER_HEIGHT = 120;
+  let gameOverY = BASE_DANGER_HEIGHT;
+
+  // Fascia alta per il posizionamento
+  const TOP_BAND_HEIGHT = 120;
+  let spawnY = Math.min(60, TOP_BAND_HEIGHT / 2);
+
+  // Palle speciali
+  const SPECIAL_TYPES = new Set(['bomba', 'vetro', 'vortice', 'detonatrice', 'metal', 'oro']);
+  const SPECIAL_CHANCE = 0.1;
+
+  // Limiti
+  const MAX_BALLS = 30;
+  const MAX_PARTICLES = 100;
+  const DROP_COOLDOWN = 0.4;
+  let lastDropTime = 0;
+
+  // Stato globale
+  let balls = [];
+  let paused = false;
+  let gameOver = false;
+  let score = 0;
+  let bestScore = parseInt(localStorage.getItem('ballDropBest') || '0');
+  let highestTypeIndex = 0;
+  let vortexEffect = null;
+
+  // 💎 Potenziamenti
+  let hasJolly = false;
+  let hasFuoco = false;
+  let heldPowerup = null;
+   
+  // 🎯 Controllo loop
+  let gameStarted = false; 
+  let animationFrameId = null;
+  let loopActive = false; //
+
+  const R = (a, b) => a + Math.random() * (b - a);
+
+// 🌍 TRADUZIONI
+const translations = {
+  it: {
+    play: "🎮 GIOCA",
+    options: "⚙️ OPZIONI",
+    credits: "📜 CREDITI",
+    back: "← INDIETRO",
+    audio: "Audio",
+    cheats: "Trucchi",
+    language: "Lingua",
+    theme: "Tema",
+    background: "Sfondo",
+    resume: "RIPRENDI",
+    restart: "RIAVVIA",
+    quit: "ESCI",
+    select: "SELEZIONA",
+    paused: "PAUSED",
+    next: "Prossimo",
+    level: "LIVELLO",
+    score: "PUNTEGGIO",
+    gameOver: "GAME OVER",
+    restartGame: "Rigioca",
+    hint: "Tieni premuto per “agganciare” la palla, trascina nella fascia alta e lascia per farla cadere!",
+    creditsText: "Realizzato con ❤️ da <strong>Mirko Yuri Donato</strong><br>Il gioco presenta parti realizzati mediante l'uso del-<br>l'intelligenza artificiale, principalmente i Modelli GPT 5<br>Qwen 3 di Alibaba Cloud, DeepSeek e Microsoft Copilot<br>Il codice sorgente è rilasciato sotto la licenza MIT,<br>mentre gli assets sono sotto la<br>Creative Commons Attribution 4.0 International Public License."
+  },
+  sc: {
+    play: "🎮 GIOCA",
+    options: "⚙️ UZIONI",
+    credits: "📜 CRIDITI",
+    back: "← NDRU",
+    audio: "Audio",
+    cheats: "Trucchi",
+    language: "Lingua",
+    theme: "Tema",
+    background: "Sfunnu",
+    resume: "RIPRINNI",
+    restart: "RIAVVIA",
+    quit: "ESCI",
+    select: "SCEGLI",
+    paused: "PAUSATO",
+    next: "Prossimu",
+    level: "LIVELLU",
+    score: "PUNTEGGIU",
+    gameOver: "GAME OVER",
+    restartGame: "Rigioca",
+    hint: "Tieni primitu pi “nciurrari” la palora, trascina ntâ fascia auta e lassa pi fari cadiri!",
+    creditsText: "Fattu cu ❤️ di <strong>Mirko Yuri Donato</strong><br>Lu jocu cci à parti fattu cu l’AI, principalmenti GPT 5,<br>Qwen 3 di Alibaba Cloud, DeepSeek e Microsoft Copilot<br>Lu codici è sutta licenza MIT,<br>mmentri li assets sunnu sutta<br>Creative Commons Attribution 4.0 International."
+  }
+};
+
+let currentLang = 'it';
+
+function setLanguage(lang) {
+  currentLang = lang;
+  const t = translations[lang];
+  
+  // Menu principale
+  document.getElementById('btnPlay').textContent = t.play;
+  document.getElementById('btnOptions').textContent = t.options;
+  document.getElementById('btnCredits').textContent = t.credits;
+  document.getElementById('btnBackOptions').textContent = t.back;
+  document.getElementById('btnBackCredits').textContent = t.back;
+  
+  // Opzioni
+  document.querySelector('.settings-row:nth-child(2) span').textContent = t.audio;
+  document.querySelector('.settings-row:nth-child(3) span').textContent = t.cheats;
+  document.querySelector('.settings-row:nth-child(4) span').textContent = t.language;
+  
+  // Pausa
+  document.getElementById('btnResume').textContent = t.resume;
+  document.getElementById('btnRestartPause').textContent = t.restart;
+  document.getElementById('btnOptionsPause').textContent = t.options;
+  document.getElementById('btnQuit').textContent = t.quit;
+  document.querySelector('.pause-title').textContent = t.paused;
+  
+  // HUD
+  document.querySelector('.next span').textContent = t.next;
+  levelEl.textContent = `${t.level} ${level}`;
+  scoreEl.textContent = `${t.score} ${String(score).padStart(6, '0')}`;
+  
+  // Altri
+  document.getElementById('btnSelectJolly').textContent = t.select;
+  hintEl.textContent = t.hint;
+  document.querySelector('.credits-text').innerHTML = t.creditsText;
+  document.getElementById('restartBtn').textContent = t.restartGame;
+  document.querySelector('.title').textContent = "GAME OVER"; // lasciamo in inglese per stile
+  
+  // Salva preferenza
+  localStorage.setItem('ballDropLang', lang);
+}
+
+  // Funzione helper per esagono (calcio)
+  function drawHex(cx, x, y, size) {
+    cx.save();
+    cx.translate(x, y);
+    cx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3;
+      const xx = Math.cos(angle) * size;
+      const yy = Math.sin(angle) * size;
+      if (i === 0) cx.moveTo(xx, yy);
+      else cx.lineTo(xx, yy);
+    }
+    cx.closePath();
+    cx.fill();
+    cx.restore();
+  }
+
+  // Cache sprite
+  const spriteCache = new Map();
+  const imagePromises = [];
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    img.src = src;
+  });
+}
+
+// UI ELEMENTS
+const scoreEl = document.getElementById('score');
+const levelEl = document.getElementById('level');
+const finalScoreEl = document.getElementById('finalScore');
+const bestScoreEl = document.getElementById('bestScore');
+const nextIcon = document.getElementById('nextIcon');
+const nextCtx = nextIcon.getContext('2d');
+const pauseBtn = document.getElementById('pauseBtn');
+const inventoryBtn = document.getElementById('inventoryBtn');
+const overEl = document.getElementById('gameOver');
+const restartBtn = document.getElementById('restartBtn');
+const hintEl = document.getElementById('hint');
+const jollyEl = document.getElementById('jolly');
+const fuocoEl = document.getElementById('fuoco');
+
+// MENU ELEMENTS
+const menuOverlay = document.getElementById('menu-overlay');
+const screenMain = document.getElementById('screen-main');
+const screenOptions = document.getElementById('screen-options');
+const screenCredits = document.getElementById('screen-credits');
+const btnPlay = document.getElementById('btnPlay');
+const btnOptions = document.getElementById('btnOptions');
+const btnCredits = document.getElementById('btnCredits');
+const btnBackOptions = document.getElementById('btnBackOptions');
+const btnBackCredits = document.getElementById('btnBackCredits');
+const btnToggleAudio = document.getElementById('btnToggleAudio');
+const btnEnableCheats = document.getElementById('btnEnableCheats');
+
+
+
+// PAUSE MENU ELEMENTS
+const pauseMenu = document.getElementById('pauseMenu');
+const btnResume = document.getElementById('btnResume');
+const btnRestartPause = document.getElementById('btnRestartPause');
+const btnOptionsPause = document.getElementById('btnOptionsPause');
+const btnQuit = document.getElementById('btnQuit');
+const btnClosePause = document.getElementById('btnClosePause');
+
+// JOLLY SELECTOR ELEMENTS
+const jollySelector = document.getElementById('jollySelector');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const previewName = document.getElementById('previewName');
+const previewCanvas = document.getElementById('previewCanvas');
+const btnSelectJolly = document.getElementById('btnSelectJolly');
+const previewCtx = previewCanvas.getContext('2d');
+// === Parametri per la logica di game-over nella "linea rossa" ==========
+const DANGER_STILL_SPEED = 20;    // px/s -> sotto questo valore la palla è considerata "ferma"
+const DANGER_TIME_LIMIT  = 5.0;   // secondi nella zona rossa prima del game over
+
+// MISSIONI
+let missions = [
+  { id: 'fuse_3_golf', text: 'Fai fondere 3 palle da golf', completed: false, target: 3, current: 0 },
+  { id: 'fuse_2_vetro', text: 'Fai fondere 2 palle di vetro', completed: false, target: 2, current: 0 },
+  { id: 'drop_10_bombs', text: 'Lascia cadere 10 bombe', completed: false, target: 10, current: 0 },
+  { id: 'score_5000', text: 'Raggiungi 5000 punti', completed: false, target: 5000, current: 0 }
+];
+
+// POI CARICA I DATI SALVATI
+const savedMissions = localStorage.getItem('ballDropMissions');
+if (savedMissions) {
+  try {
+    const parsedMissions = JSON.parse(savedMissions);
+    // Aggiorna le missioni predefinite con i progressi salvati
+    missions = missions.map(defaultMission => {
+      const savedMission = parsedMissions.find(m => m.id === defaultMission.id);
+      return savedMission ? { ...defaultMission, ...savedMission } : defaultMission;
+    });
+    console.log('Missioni caricate con successo');
+  } catch (e) {
+    console.log('Impossibile caricare missioni salvate, uso quelle predefinite:', e);
+  }
+}
+
+// Funzione che attiva game over (personalizzala come vuoi)
+function triggerGameOver(reasonBall) {
+  gameOver = true;
+  // feedback visivo / sonoro
+  floatText('GAME OVER', W/2, H/2);
+  sfx('gameover');
+  // eventualmente evidenzia la palla che ha causato il game over
+  if (reasonBall) {
+    reasonBall.flash = 1.0; // se il renderer usa questo campo
+  }
+  // Eventuali ulteriori pulizie: stop suoni, salva score, ecc.
+}
+
+
+// margini interni del campo (coerenti con il bordo visivo del canvas)
+const WALL = {
+  left: 10,
+  right: W - 10,
+  bottom: H - 10
+};
+
+// Rimbalzo contro le pareti con correzione di penetrazione
+function collideWithWalls(b) {
+  const left   = WALL.left + b.r;
+  const right  = WALL.right - b.r;
+  const bottom = WALL.bottom - b.r;
+
+  // Parete sinistra/destra (asse X)
+  if (b.x < left) {
+    b.x = left;
+    if (b.vx < 0) b.vx = -b.vx * b.rest;
+  } else if (b.x > right) {
+    b.x = right;
+    if (b.vx > 0) b.vx = -b.vx * b.rest;
+  }
+
+  // Pavimento (asse Y)
+  if (b.y > bottom) {
+    b.y = bottom;
+
+    // gestione speciale per la palla "vetro": se non è supportata, si rompe
+    if (b.type === 'vetro') {
+      let supported = false;
+      for (const other of balls) {
+        if (other === b || other.held) continue;
+        if (other.y > b.y && Math.abs(b.x - other.x) < (b.r + other.r) * 0.8) {
+          const gap = (b.y + b.r) - (other.y - other.r);
+          if (gap < 5) { supported = true; break; }
+        }
+      }
+      if (!supported) {
+        floatText('SPLASH!', b.x, b.y);
+        sfx('tink');
+        // rimuovi la palla di vetro
+        const i = balls.indexOf(b);
+        if (i !== -1) balls.splice(i, 1);
+        return;
+      }
+    }
+
+    // rimbalzo con restituzione che scala col livello
+    const effRest = Math.max(0.2, b.rest - (level - 1) * 0.04);
+    b.vy = -Math.abs(b.vy) * effRest;
+  }
+}
+
+// Clamp finale: impedisce in modo assoluto ogni uscita (anche se qualcosa sfugge)
+function hardClamp(b) {
+  b.x = Math.max(WALL.left + b.r, Math.min(WALL.right - b.r, b.x));
+  b.y = Math.min(WALL.bottom - b.r, b.y);
+}
+function changeThemeSmoothly(newTheme) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; inset: 0; background: black;
+        opacity: 0; pointer-events: none; z-index: 999;
+        transition: opacity 0.4s ease;
+    `;
+    document.body.appendChild(overlay);
+
+    // Fade in
+    setTimeout(() => overlay.style.opacity = '1', 10);
+
+    // Cambia tema e fade out
+    setTimeout(() => {
+        applyTheme(newTheme);
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 500);
+    }, 500);
+}
+
+// 🎨 TEMI
+function applyTheme(theme) {
+  const body = document.body;
+  const hud = document.querySelector('.hud');
+  const game = document.getElementById('game');
+  
+  // Rimuovi vecchi temi
+  body.classList.remove('theme-green', 'theme-fire', 'theme-night');
+  hud.classList.remove('theme-green', 'theme-fire', 'theme-night');
+  game.classList.remove('theme-green', 'theme-fire', 'theme-night');
+  
+  // Applica nuovo tema
+  body.classList.add(`theme-${theme}`);
+  hud.classList.add(`theme-${theme}`);
+  game.classList.add(`theme-${theme}`);
+  
+  localStorage.setItem('ballDropTheme', theme);
+}
+
+// 🖼️ SFONDI
+function applyBackground(bg) {
+  const canvas = document.getElementById('game');
+  switch (bg) {
+    case 'scacchiera':
+      canvas.style.backgroundImage = "url('assets/background/scacchiera.png')";
+      break;
+    case 'legno':
+      canvas.style.backgroundImage = "url('assets/background/legno.png')";
+      break;
+    default: // 'erba' o valore predefinito
+      canvas.style.backgroundImage = "url('assets/background/erba.png')";
+      break;
+  }
+  canvas.style.backgroundSize = 'cover';
+  canvas.style.backgroundPosition = 'center';
+  canvas.style.backgroundRepeat = 'no-repeat';
+  localStorage.setItem('ballDropBg', bg);
+}
+
+// DICHIARA LE VARIABILI PRIMA DI UTILIZZARLE
+const savedTheme = localStorage.getItem('ballDropTheme') || 'green';
+const savedBg = localStorage.getItem('ballDropBg') || 'erba';
+
+// Inizializza temi e sfondi
+document.getElementById('themeSelect').addEventListener('change', (e) => {
+    changeThemeSmoothly(e.target.value);
+});
+document.getElementById('bgSelect').value = savedBg;
+applyTheme(savedTheme);
+applyBackground(savedBg);
+
+// JOLLY SELECTABLE TYPES
+const jollySelectableTypes = [
+  'golf', 'pingpong', 'squash', 'tennis', 'basket', 'calcio', 'pallamedica',
+  'bomba', 'vetro', 'vortice', 'detonatrice', 'metal', 'oro'
+];
+let jollySelectionIndex = 0;
+
+function updateJollyPreview() {
+  const type = jollySelectableTypes[jollySelectionIndex];
+  previewName.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+  getSprite(type).then(sprite => {
+    if (!sprite) return;
+    previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    const size = Math.min(previewCanvas.width, previewCanvas.height) * 0.8;
+    const x = (previewCanvas.width - size) / 2;
+    const y = (previewCanvas.height - size) / 2;
+    previewCtx.imageSmoothingEnabled = false;
+    previewCtx.drawImage(sprite, x, y, size, size);
+  }).catch(()=>{});
+}
+
+btnPrev.addEventListener('click', () => {
+  jollySelectionIndex = (jollySelectionIndex - 1 + jollySelectableTypes.length) % jollySelectableTypes.length;
+  updateJollyPreview();
+});
+
+btnNext.addEventListener('click', () => {
+  jollySelectionIndex = (jollySelectionIndex + 1) % jollySelectableTypes.length;
+  updateJollyPreview();
+});
+
+btnSelectJolly.addEventListener('click', () => {
+  const type = jollySelectableTypes[jollySelectionIndex];
+  spawnBall(W/2, spawnY, type).then(ball => {
+    if (!ball) return;
+    ball.held = true;
+    ball.asleep = false;
+    heldBall = ball;
+    setTimeout(() => {
+      ball.held = false;
+      heldBall = null;
+      jollySelector.classList.remove('visible');
+      jollySelector.classList.add('hidden');
+      hasJolly = false;
+      updatePowerupsUI();
+    }, 50);
+  }).catch(()=>{});
+  jollySelectionIndex = 0;
+});
+
+// Funzione per mostrare le modalità di gioco
+function showGameModes() {
+  screenMain.classList.remove('active');
+  screenGameModes.classList.add('active');
+}
+
+// RIMUOVI questa riga finale:
+// loop();
+
+function startGame() {
+  console.log("🎯 Avvio gioco...");
+  
+  // ✅ FERMA EVENTUALI LOOP PREECEDENTI
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+  
+  // ✅ IMPOSTA gameStarted PRIMA di tutto
+  gameStarted = true;
+  
+  menuOverlay.style.display = 'none';
+  document.querySelector('.hud').classList.add('visible');
+  
+  // Reset stato gioco
+  balls = [];
+  particles = [];
+  score = 0;
+  level = 1;
+  highestTypeIndex = 0;
+  paused = false;
+  gameOver = false;
+  vortexEffect = null;
+  hasJolly = false;
+  hasFuoco = false;
+  heldPowerup = null;
+  
+  scoreEl.textContent = fmt(0);
+  levelEl.textContent = `LIVELLO ${level}`;
+  updatePowerupsUI();
+  redrawNext();
+  
+  for (let i = 0; i < 4; i++) {
+    spawnBall(R(80, W - 80), R(100, 200), 'golf');
+  }
+  
+  setTimeout(() => {
+    hintEl.classList.add('show');
+    setTimeout(() => hintEl.classList.remove('show'), 3000);
+  }, 500);
+  
+  // ✅ Reset timer e avvia loop
+  last = performance.now();
+  acc = 0;
+  animationFrameId = requestAnimationFrame(loop);
+}
+// Sposta typeToImage GLOBALE, fuori da getSprite
+const typeToImage = {
+  'basket': 'palla_da_basket.png',
+  'golf': 'palla_da_golf.png',
+  'pallamano': 'palla_da_pallamano.png',
+  'tennis': 'palla_da_tennis.png',
+  'pingpong': 'palla_da_pingpong.png',
+  'squash': 'palla_da_squash.png',
+  'lacrosse': 'palla_da_lacrosse.png',
+  'baseball': 'palla_da_baseball.png',
+  'cricket': 'palla_da_cricket.png',
+  'pallavolo': 'palla_da_pallavolo.png',
+  'waterpolo': 'palla_da_waterpolo.png',
+  'calcio': 'palla_da_calcio.png',
+  'pallamedica': 'pallamedica.png',
+  'bomba': 'bomba.png',
+  'vetro': 'palla_di_vetro.png',
+  'vortice': 'palla_vortice.png',
+  'detonatrice': 'detonatrice.png',
+  'metal': 'metal.png',
+  'oro': 'oro.png',
+  'jolly': 'jolly.png',
+  'fuoco': 'fuoco.png'
+};
+
+/**
+ * Carica o recupera dal cache lo sprite per un tipo di palla
+ * @param {string} type - Tipo di palla (es. 'golf', 'bomba')
+ * @returns {HTMLCanvasElement|null} Canvas con l'immagine ridimensionata
+ */
+async function getSprite(type) {
+    if (spriteCache.has(type)) {
+        return spriteCache.get(type);
+    }
+    let sprite = null;
+    const imgPath = typeToImage[type];
+    if (!imgPath) {
+        console.warn(`[getSprite] Tipo sconosciuto: '${type}'`);
+    } else {
+        try {
+            const fullPath = `assets/sprite/${imgPath}`;
+            const img = await loadImage(fullPath);
+            const r = RADII[type];
+            const scale = 1.5;
+            const sizePx = Math.ceil(r * 2 * DPR * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = sizePx;
+            const ctx = canvas.getContext('2d');
+            const drawSize = r * 2 * DPR * scale;
+            const offset = (sizePx - drawSize) / 2;
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(img, offset, offset, drawSize, drawSize);
+            sprite = canvas;
+        } catch (err) {
+            console.error(`Errore caricamento sprite per ${type}:`, err);
+        }
+    }
+    if (!sprite) {
+        console.error(`[Asset Mancante] '${type}' non caricato.`);
+        const r = RADII[type] || 24;
+        const scale = 1.5;
+        const sizePx = Math.ceil(r * 2 * DPR * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = sizePx;
+        const ctx = canvas.getContext('2d');
+        const center = sizePx / 2;
+        const radius = r * DPR * scale;
+        ctx.translate(center, center);
+        ctx.fillStyle = '#d32f2f';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.7, -radius * 0.7);
+        ctx.lineTo(radius * 0.7, radius * 0.7);
+        ctx.moveTo(-radius * 0.7, radius * 0.7);
+        ctx.lineTo(radius * 0.7, -radius * 0.7);
+        ctx.stroke();
+        sprite = canvas;
+    }
+    spriteCache.set(type, sprite);
+    return sprite;
+}
+function hideLoadingScreen() {
+  const loader = document.getElementById('loading-screen');
+  if (loader) {
+    loader.classList.add('hidden');
+    setTimeout(() => loader.style.display = 'none', 800);
+  }
+}
+
+function onGameReady() {
+  console.log('Gioco pronto!');
+  // qui potresti far apparire il menu principale
+  document.getElementById('menu-overlay').style.display = 'flex';
+}
+
+let spritesLoaded = false;
+
+(async () => {
+  try {
+    await Promise.all(TYPES.map(type => getSprite(type)));
+    console.log('✅ Tutti gli sprite sono stati caricati con successo.');
+    spritesLoaded = true;
+    // Chiama onGameReady solo se il DOM è già pronto
+    onGameReady();
+    
+  } catch (err) {
+    console.warn('⚠️ Alcuni sprite potrebbero non essere stati caricati:', err);
+    spritesLoaded = true; // fallback: consideriamo comunque caricati per sbloccare UI
+    if (document.readyState === 'complete') {
+      onGameReady();
+    }
+  }
+})();
+
+// Se il DOM non è ancora pronto, aspetta
+document.addEventListener('DOMContentLoaded', () => {
+  if (spritesLoaded) {
+    onGameReady();
+  }
+});
+
+btnOptions.addEventListener('click', () => {
+  screenMain.classList.remove('active');
+  screenOptions.classList.add('active');
+});
+
+btnCredits.addEventListener('click', () => {
+  screenMain.classList.remove('active');
+  screenCredits.classList.add('active');
+});
+
+// GAME MODES ELEMENTS
+const screenGameModes = document.getElementById('screen-game-modes');
+const btnModeClassic = document.getElementById('btnModeClassic');
+const btnModeMissions = document.getElementById('btnModeMissions');
+const btnModeMultiplayer = document.getElementById('btnModeMultiplayer');
+const btnBackModes = document.getElementById('btnBackModes');
+
+btnBackModes.addEventListener('click', () => {
+  screenGameModes.classList.remove('active');
+  screenMain.classList.add('active');
+});
+
+btnModeClassic.addEventListener('click', () => {
+  screenGameModes.classList.remove('active');
+  startGame();
+});
+
+btnModeMissions.addEventListener('click', () => {
+  screenGameModes.classList.remove('active');
+  showMissionsOverlay();
+});
+
+btnModeMultiplayer.addEventListener('click', () => {
+  screenGameModes.classList.remove('active');
+  showMultiplayerLobby();
+});
+
+btnBackOptions.addEventListener('click', () => {
+  screenOptions.classList.remove('active');
+  screenMain.classList.add('active');
+});
+
+btnBackCredits.addEventListener('click', () => {
+  screenCredits.classList.remove('active');
+  screenMain.classList.add('active');
+});
+
+// AUDIO TOGGLE
+let audioEnabled = true;
+btnToggleAudio.addEventListener('click', () => {
+  audioEnabled = !audioEnabled;
+  musicPlaying = audioEnabled;
+  btnToggleAudio.textContent = audioEnabled ? '🔊 ON' : '🔇 OFF';
+  btnToggleAudio.classList.toggle('off', !audioEnabled);
+});
+
+// CHEATS TOGGLE
+let cheatsEnabled = false;
+btnEnableCheats.addEventListener('click', () => {
+  if (!cheatsEnabled) {
+    enableCheats();
+    btnEnableCheats.textContent = 'ON';
+    btnEnableCheats.style.background = '#4caf50';
+    cheatsEnabled = true;
+    floatText('TRUCCHI ATTIVATI!', W/2, H/2);
+    sfx('powerup');
+  }
+});
+
+function fmt(n) { return 'PUNTEGGIO ' + String(n).padStart(6, '0'); }
+
+function updatePowerupsUI() {
+  jollyEl.style.display = hasJolly ? 'flex' : 'none';
+  fuocoEl.style.display = hasFuoco ? 'flex' : 'none';
+  inventoryBtn.style.display = (hasJolly || hasFuoco) ? 'grid' : 'none';
+}
+
+function addScore(n, x, y) {
+  score += n;
+  scoreEl.textContent = fmt(score);
+  scoreEl.classList.add('highlight');
+  setTimeout(() => scoreEl.classList.remove('highlight'), 300);
+  floatText(`+${n}`, x, y);
+  const newLevel = Math.floor(score / LEVEL_THRESHOLD) + 1;
+  if (newLevel > level) {
+    level = newLevel;
+    onLevelUp();
+  }
+}
+
+function onLevelUp() {
+  for (const b of balls) {
+    b.rest = Math.max(0.25, REST[b.type] - (level - 1) * 0.05);
+  }
+  floatText(`LIVELLO ${level}!`, W / 2, H / 2);
+  levelEl.textContent = `LIVELLO ${level}`;
+  sfx('boing');
+  ctx.filter = 'blur(2px)';
+  setTimeout(() => ctx.filter = 'none', 100);
+}
+
+// Particelle
+let particles = [];
+function spawnStars(x, y) {
+  for (let i = 0; i < 12; i++) {
+    const size = R(2, 5) * DPR;
+    particles.push({
+      x, y,
+      vx: R(-120, 120),
+      vy: R(-180, -60),
+      life: R(0.6, 1.0),
+      t: 0,
+      color: ['#ffd700', '#ffaa00', '#ffffff'][Math.floor(R(0, 3))],
+      size,
+      rotation: R(0, Math.PI * 2),
+      type: 'star'
+    });
+  }
+}
+
+function floatText(t, x, y) {
+  particles.push({
+    text: t,
+    x, y,
+    vx: R(-20, 20),
+    vy: -60,
+    life: 1.0,
+    t: 0,
+    color: '#ffdd00',
+    size: 20
+  });
+}
+
+// Audio
+let AudioContext = window.AudioContext || window.webkitAudioContext;
+let Audio = null;
+let musicPlaying = true;
+
+function initAudio() {
+  if (!Audio) {
+    Audio = new AudioContext();
+  }
+}
+
+// 🖼️ SFONDI - DICHIARA savedBg PRIMA
+
+function applyBackground(bg) {
+  const canvas = document.getElementById('game');
+  switch (bg) {
+    case 'scacchiera':
+      canvas.style.backgroundImage = "url('assets/background/scacchiera.png')";
+      break;
+    case 'legno':
+      canvas.style.backgroundImage = "url('assets/background/legno.png')";
+      break;
+    default: // 'erba' o valore predefinito
+      canvas.style.backgroundImage = "url('assets/background/erba.png')";
+      break;
+  }
+  canvas.style.backgroundSize = 'cover';
+  canvas.style.backgroundPosition = 'center';
+  canvas.style.backgroundRepeat = 'no-repeat';
+  // Salva la scelta dell'utente
+  localStorage.setItem('ballDropBg', bg);
+}
+
+// Inizializza lo sfondo salvato
+document.getElementById('bgSelect').value = savedBg;
+applyBackground(savedBg);
+
+function applyTheme(theme) {
+  const body = document.body;
+  const hud = document.querySelector('.hud');
+  const game = document.getElementById('game');
+  
+  // Rimuovi vecchi temi
+  body.classList.remove('theme-green', 'theme-fire', 'theme-night');
+  hud.classList.remove('theme-green', 'theme-fire', 'theme-night');
+  game.classList.remove('theme-green', 'theme-fire', 'theme-night');
+  
+  // Applica nuovo tema
+  body.classList.add(`theme-${theme}`);
+  hud.classList.add(`theme-${theme}`);
+  game.classList.add(`theme-${theme}`);
+  
+  localStorage.setItem('ballDropTheme', theme);
+}
+
+// Inizializza temi
+applyTheme(savedTheme);
+
+// Eventi
+document.getElementById('themeSelect').addEventListener('change', (e) => {
+  applyTheme(e.target.value);
+});
+
+function sfx(kind) {
+  if (!musicPlaying || !Audio) return;
+  try {
+    const g = Audio.createGain();
+    g.connect(Audio.destination);
+    g.gain.value = 0.15;
+    const o = Audio.createOscillator();
+    o.connect(g);
+    const now = Audio.currentTime;
+    switch (kind) {
+      case 'tink': o.type = 'sine'; o.frequency.setValueAtTime(700, now); o.frequency.exponentialRampToValueAtTime(500, now + 0.1); break;
+      case 'boing': o.type = 'triangle'; o.frequency.setValueAtTime(200, now); o.frequency.exponentialRampToValueAtTime(150, now + 0.15); break;
+      case 'merge': o.type = 'sawtooth'; o.frequency.setValueAtTime(400, now); o.frequency.exponentialRampToValueAtTime(250, now + 0.2); break;
+      case 'powerup': o.type = 'square'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(600, now + 0.15); break;
+    }
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.3, now + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+    o.start(now);
+    o.stop(now + 0.26);
+  } catch (e) {}
+}
+
+// Attiva audio al primo tocco
+document.addEventListener('touchstart', initAudio, { once: true });
+document.addEventListener('click', initAudio, { once: true });
+
+// 🔁 SISTEMA DI DROP CON ANTI-SPAM
+let heldBall = null;
+let isDragging = false;
+let currentPointerId = null;
+
+canvas.addEventListener('pointerdown', (e) => {
+    if (gameOver || paused || isDragging) return;
+    const now = performance.now() / 1000;
+    if (now - lastDropTime < DROP_COOLDOWN) {
+        floatText('Aspetta!', W / 2, H / 2);
+        sfx('tink');
+        return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    let x = (e.clientX - rect.left) / rect.width * W;
+    if (x < 10 || x > W - 10) return;
+    let type;
+    if (level >= 5 && Math.random() < SPECIAL_CHANCE) {
+        const choices = ['bomba', 'vetro', 'vortice', 'detonatrice'];
+        if (level >= 7 && Math.random() < 0.3) choices.push('metal');
+        if (level >= 10 && Math.random() < 0.1) choices.push('oro');
+        type = choices[Math.floor(Math.random() * choices.length)];
+    } else {
+        type = TYPES[Math.floor(R(0, Math.min(highestTypeIndex + 1, 5)))];
+    }
+    if (balls.length >= MAX_BALLS) return;
+    spawnBall(x, spawnY, type).then(ball => {
+        if (!ball) return;
+        heldBall = ball;
+        heldBall.vx = 0;
+        heldBall.vy = 0;
+        heldBall.held = true;
+        heldBall.asleep = false;
+        isDragging = true;
+        currentPointerId = e.pointerId;
+        e.preventDefault();
+        canvas.setPointerCapture(e.pointerId);
+        floatText('PRONTO', x, spawnY - 20);
+        sfx('tink');
+        lastDropTime = now;
+    }).catch(()=>{});
+});
+
+canvas.addEventListener('pointermove', (e) => {
+    if (!isDragging || !heldBall || e.pointerId !== currentPointerId) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const newX = (e.clientX - rect.left) / rect.width * W;
+    const minX = 10 + heldBall.r;
+    const maxX = W - 10 - heldBall.r;
+    heldBall.x = Math.max(minX, Math.min(maxX, newX));
+    heldBall.y = spawnY;
+});
+
+canvas.addEventListener('pointerup', (e) => {
+    if (!isDragging || !heldBall || e.pointerId !== currentPointerId) return;
+    heldBall.held = false;
+    heldBall.asleep = false;
+    isDragging = false;
+    heldBall = null;
+    try {
+        canvas.releasePointerCapture(currentPointerId);
+    } catch (e) {}
+    currentPointerId = null;
+});
+
+canvas.addEventListener('pointercancel', (e) => {
+    if (!isDragging || !heldBall || e.pointerId !== currentPointerId) return;
+    heldBall.held = false;
+    heldBall.asleep = false;
+    isDragging = false;
+    heldBall = null;
+    try {
+        canvas.releasePointerCapture(currentPointerId);
+    } catch (e) {}
+    currentPointerId = null;
+});
+
+// === NUOVO: GESTIONE MENU PAUSA ===
+pauseBtn.addEventListener('click', () => {
+  if (gameOver) return;
+  paused = !paused;
+  pauseBtn.style.opacity = paused ? 0.6 : 1;
+  if (paused) {
+    sfx('boing');
+    pauseMenu.classList.remove('hidden');
+    pauseMenu.classList.add('visible');
+  } else {
+    pauseMenu.classList.remove('visible');
+    pauseMenu.classList.add('hidden');
+  }
+});
+
+// PULSANTI MENU PAUSA
+btnResume.addEventListener('click', () => {
+  paused = false;
+  pauseBtn.style.opacity = 1;
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
+});
+
+btnRestartPause.addEventListener('click', () => {
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
+  resetGame();
+});
+
+btnOptionsPause.addEventListener('click', () => {
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
+  screenMain.classList.remove('active');
+  screenOptions.classList.add('active');
+});
+btnQuit.addEventListener('click', () => {
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
+  
+  // ✅ Ferma il loop del gioco
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+  
+  // Reset stato gioco
+  paused = false;
+  gameOver = true;
+  
+  // ✅ Mostra il menu principale
+  screenOptions.classList.remove('active');
+  screenCredits.classList.remove('active');
+  screenGameModes.classList.remove('active');
+  screenMain.classList.add('active');
+  menuOverlay.style.display = 'flex';
+  document.querySelector('.hud').classList.remove('visible');
+});
+
+btnOptionsPause.addEventListener('click', () => {
+  pauseMenu.classList.remove('visible');
+  pauseMenu.classList.add('hidden');
+  // ✅ Mostra SOLO la schermata opzioni
+  screenMain.classList.remove('active');
+  screenCredits.classList.remove('active');
+  screenOptions.classList.add('active');
+  menuOverlay.style.display = 'flex';
+});
+
+inventoryBtn.addEventListener('click', () => {
+  if (hasFuoco) {
+    floatText('FUOCO!', W / 2, H / 2);
+    sfx('powerup');
+    for (const b of balls) {
+      for (let i = 0; i < 10; i++) {
+        particles.push({
+          x: b.x, y: b.y,
+          vx: R(-100, 100), vy: R(-150, 150),
+          life: R(0.3, 0.7), t: 0,
+          color: '#ff4500', size: R(2, 4)
+        });
+      }
+    }
+    balls = [];
+    hasFuoco = false;
+  } else if (hasJolly) {
+    jollySelector.classList.remove('hidden');
+    jollySelector.classList.add('visible');
+    updateJollyPreview();
+    floatText('JOLLY: Seleziona una palla', W / 2, H / 2);
+    sfx('powerup');
+  }
+  updatePowerupsUI();
+});
+
+restartBtn.addEventListener('click', resetGame);
+function resetGame() {
+  balls = [];
+  particles = [];
+  score = 0;
+  level = 1;
+  highestTypeIndex = 0;
+  paused = false;
+  gameOver = false;
+  vortexEffect = null;
+  hasJolly = false;
+  hasFuoco = false;
+  heldPowerup = null;
+  
+  // ✅ Ferma il loop corrente prima di ricominciare
+  cancelAnimationFrame(animationFrameId);
+  
+  jollySelector.classList.remove('visible');
+  jollySelector.classList.add('hidden');
+  scoreEl.textContent = fmt(0);
+  levelEl.textContent = `LIVELLO ${level}`;
+  updatePowerupsUI();
+  redrawNext();
+  
+  for (let i = 0; i < 4; i++) {
+    spawnBall(R(80, W - 80), R(100, 200), 'golf');
+  }
+  
+  overEl.classList.remove('visible');
+  overEl.classList.add('hidden');
+  
+  // ✅ Riavvia il loop
+  loop();
+}
+
+async function spawnBall(x, y, type) {
+  if (!type) return null;
+  const r = RADII[type];
+  let sprite = null;
+  if (spriteCache.has(type)) {
+    sprite = spriteCache.get(type);
+  } else {
+    const imgPath = `assets/sprite/${typeToImage[type]}`;
+    try {
+      const img = await loadImage(imgPath);
+      const s = Math.ceil(r * 2 * DPR + 10);
+      const c = document.createElement('canvas');
+      c.width = c.height = s;
+      const cx = c.getContext('2d');
+      const size = r * 2 * DPR;
+      cx.drawImage(img, (s - size) / 2, (s - size) / 2, size, size);
+      sprite = c;
+      spriteCache.set(type, sprite);
+    } catch (err) {
+      console.warn('Impossibile caricare immagine:', imgPath, err);
+      sprite = await getSprite(type);
+    }
+  }
+  const ball = new Ball(x, y, type, sprite);
+  balls.push(ball);
+  return ball;
+}
+
+async function redrawNext() {
+    nextCtx.clearRect(0, 0, nextIcon.width, nextIcon.height);
+    const idx = Math.min(highestTypeIndex + 1, TYPES.length - 1);
+    const type = TYPES[idx];
+    const s = await getSprite(type);
+    if (!s) {
+        console.error(`Sprite non trovato per il tipo: ${type}`);
+        return;
+    }
+    const sz = 48 * DPR;
+    const x = (nextIcon.width - sz) / 2;
+    const y = (nextIcon.height - sz) / 2;
+    nextCtx.imageSmoothingEnabled = false;
+    nextCtx.drawImage(s, x, y, sz, sz);
+}
+
+// 🔥 Bomba
+function explode(x, y) {
+  sfx('boing');
+  floatText('BOOM!', x, y);
+  for (let i = 0; i < 20; i++) {
+      particles.push({
+          x, y,
+          vx: R(-200, 200),
+          vy: R(-250, -60),
+          life: R(0.5, 0.9),
+          t: 0,
+          color: ['#ff4500', '#ff8c00', '#ffd700'][Math.floor(R(0, 3))],
+          size: R(3, 6) * DPR
+      });
+  }
+  const survivors = [];
+  for (const b of balls) {
+      const dist = Math.hypot(b.x - x, b.y - y);
+      if (dist < 80) {
+          if (b.type === 'metal') {
+              hasJolly = true;
+              floatText('JOLLY!', b.x, b.y);
+              sfx('powerup');
+          } else if (b.type === 'oro') {
+              addScore(500, b.x, b.y);
+              if (Math.random() < 0.7) {
+                  hasJolly = true;
+                  floatText('JOLLY!', b.x, b.y);
+              } else {
+                  hasFuoco = true;
+                  floatText('FUOCO!', b.x, b.y);
+              }
+              sfx('powerup');
+          }
+      } else {
+          survivors.push(b);
+      }
+  }
+  balls = survivors;
+  updatePowerupsUI();
+}
+
+function checkCrush() {
+  for (const top of balls) {
+    if (top.asleep && !top.held) {
+      for (const bottom of balls) {
+        if (bottom.asleep || bottom.type === 'vetro' || bottom.held) continue;
+        if (top === bottom) continue;
+        const dy = bottom.y - top.y;
+        const dx = Math.abs(bottom.x - top.x);
+        if (dy > 0 && dy < 30 && dx < (top.r + bottom.r) * 0.6 && top.r > bottom.r + 8) {
+          floatText('CRUSH!', bottom.x, bottom.y);
+          balls = balls.filter(b => b !== bottom);
+          sfx('boing');
+          return;
+        }
+      }
+    }
+  }
+}
+function detonateAllBombs() {
+  balls = balls.filter(ball => ball.type !== 'bomba');
+}
+
+// === UPDATE con timer per zona rossa ===================================
+function update(dt) {
+  if (paused || gameOver) return;
+
+  // aggiorna gravità / linea pericolo come prima
+  G = BASE_G + (level - 1) * 100;
+  gameOverY = Math.min(300, BASE_DANGER_HEIGHT + (level - 1) * 10);
+
+  // 🔥 CORREZIONE: RIMUOVI IL "continue" PER LE PALLE ASLEEP
+  for (const b of balls) {
+    // Inizializza timer se mancante
+    if (typeof b.dangerTimer !== 'number') b.dangerTimer = 0;
+
+    // 🔥 APPLICA FISICA SOLO SE NON È TENUTA E NON È TROPPO FERMA
+    if (!b.held && !b.asleep) {
+      // integrazione fisica (sub-stepping per evitare tunneling)
+      b.vy += G * dt;
+      b.vx *= (1 - FRICTION);
+
+      const maxDist = Math.max(Math.abs(b.vx * dt), Math.abs(b.vy * dt));
+      const stepSize = Math.max(1, b.r * 0.4);
+      const steps = Math.min(8, Math.max(1, Math.ceil(maxDist / stepSize)));
+      const hdt = dt / steps;
+
+      for (let s = 0; s < steps; s++) {
+        b.x += b.vx * hdt;
+        b.y += b.vy * hdt;
+        collideWithWalls(b);
+      }
+
+      hardClamp(b);
+
+      // 🔥 CORREZIONE: LOGICA SLEEP MIGLIORATA
+      const speed = Math.hypot(b.vx, b.vy);
+      if (speed < 5 && b.y >= H - 20 - b.r) {
+        // Solo se è quasi ferma E vicino al fondo
+        b.asleep = true;
+        b.vx = 0;
+        b.vy = 0;
+      }
+    }
+
+    // ----- LOGICA: timer per la zona rossa -----
+    const topOfBall = b.y - b.r;
+    const inDangerZone = topOfBall <= gameOverY;
+
+    // velocità reale (modulo)
+    const speed = Math.hypot(b.vx, b.vy);
+
+    if (inDangerZone && !b.held) {
+      if (speed <= DANGER_STILL_SPEED) {
+        b.dangerTimer += dt;
+        if (b.dangerTimer > 0.2) {
+          floatText((DANGER_TIME_LIMIT - b.dangerTimer).toFixed(1) + 's', b.x, b.y - b.r - 12);
+        }
+
+        if (b.dangerTimer >= DANGER_TIME_LIMIT) {
+          triggerGameOver(b);
+          return;
+        }
+      } else {
+        b.dangerTimer = 0;
+      }
+    } else {
+      b.dangerTimer = 0;
+    }
+  }
+
+  // Vortex effect - 🔥 CORREZIONE: RISVEGLIA LE PALLE
+  if (vortexEffect) {
+    vortexEffect.duration -= dt;
+    if (vortexEffect.duration <= 0) {
+      vortexEffect = null;
+    } else {
+      for (const b of balls) {
+        if (b.type === 'vortice' || b.held) continue;
+        const dx = vortexEffect.x - b.x;
+        const dy = vortexEffect.y - b.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 120) {
+          const force = (120 - dist) / 120 * 400 * dt;
+          b.vx += (dx / dist) * force;
+          b.vy += (dy / dist) * force;
+          // 🔥 RISVEGLIA LA PALLA SE È IN VORTICE
+          b.asleep = false;
+        }
+      }
+    }
+  }
+
+  // Collisioni tra palle - 🔥 CORREZIONE: RISVEGLIA LE PALLE IN COLLISIONE
+  const cell = 64;
+  const grid = new Map();
+  function key(i, j) { return `${i},${j}`; }
+  
+  for (const b of balls) {
+    if (b.held) continue;
+    const i = Math.floor(b.x / cell), j = Math.floor(b.y / cell);
+    for (let ii = i - 1; ii <= i + 1; ii++) {
+      for (let jj = j - 1; jj <= j + 1; jj++) {
+        const k = key(ii, jj);
+        if (!grid.has(k)) grid.set(k, []);
+        grid.get(k).push(b);
+      }
+    }
+  }
+
+  const pairs = new Set();
+  for (const arr of grid.values()) {
+    for (let a = 0; a < arr.length; a++) {
+      for (let d = a + 1; d < arr.length; d++) {
+        const A = arr[a], B = arr[d];
+        const id = A.id < B.id ? A.id + '|' + B.id : B.id + '|' + A.id;
+        if (pairs.has(id)) continue;
+        pairs.add(id);
+        
+        const dx = B.x - A.x, dy = B.y - A.y;
+        const dist2 = dx * dx + dy * dy;
+        const rr = A.r + B.r;
+        if (dist2 > rr * rr) continue;
+        
+        const dist = Math.sqrt(dist2) || 1;
+        const nx = dx / dist, ny = dy / dist;
+        const overlap = rr - dist;
+        const totalMass = A.m + B.m;
+        const aShare = B.m / totalMass, bShare = A.m / totalMass;
+        
+        A.x -= nx * overlap * aShare;
+        A.y -= ny * overlap * aShare;
+        B.x += nx * overlap * bShare;
+        B.y += ny * overlap * bShare;
+        
+        const rvx = B.vx - A.vx, rvy = B.vy - A.vy;
+        const velAlongNormal = rvx * nx + rvy * ny;
+        
+        if (velAlongNormal < 0) {
+          const e = Math.min(A.rest, B.rest) * 1.1;
+          const j = -(1 + e) * velAlongNormal / (1 / A.m + 1 / B.m);
+          const impX = j * nx, impY = j * ny;
+          
+          A.vx -= impX / A.m;
+          A.vy -= impY / A.m;
+          B.vx += impX / B.m;
+          B.vy += impY / B.m;
+          
+          A.squash = B.squash = Math.min(1.5, Math.abs(velAlongNormal) / 400);
+          
+          // 🔥 IMPORTANTE: RISVEGLIA LE PALLE IN COLLISIONE
+          A.asleep = false;
+          B.asleep = false;
+        }
+        
+        if (A.type === B.type && !A.merging && !B.merging && Math.hypot(rvx, rvy) < MERGE_SPEED_THRESHOLD && A.held === B.held) {
+          if (A.type === 'bomba') {
+            explode((A.x + B.x) / 2, (A.y + B.y) / 2);
+            balls = balls.filter(b => b !== A && b !== B);
+          } else if (A.type === 'detonatrice') {
+            detonateAllBombs();
+            balls = balls.filter(b => b !== A && b !== B);
+          } else if (A.type === 'metal' || A.type === 'oro') {
+            // Non fare nulla per metal e oro
+          } else {
+            mergeBalls(A, B);
+          }
+        }
+      }
+    }
+  }
+  
+  // Check game over
+  for (const b of balls) {
+    if (b.dangerTimer >= DANGER_TIME_LIMIT) {
+      triggerGameOver(b);
+      return;
+    }
+  }
+  
+  // Check crush
+  checkCrush();
+
+  // Update particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.t += dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 600 * dt;
+    if (p.type === 'star') p.rotation += 0.2;
+    if (p.t > p.life) particles.splice(i, 1);
+    if (particles.length > MAX_PARTICLES) particles.splice(0, particles.length - MAX_PARTICLES);
+  }
+}
+function mergeBalls(A, B) {
+  sfx('merge');
+  spawnStars((A.x + B.x) / 2, (A.y + B.y) / 2);
+  const baseType = A.type;
+  const idx = TYPES.indexOf(baseType);
+  const scoreBonus = (A.type === 'vetro' || B.type === 'vetro') ? 3 : 1;
+  if (idx < SCORE_STEP.length) {
+    addScore(SCORE_STEP[idx] * scoreBonus, (A.x + B.x) / 2, (A.y + B.y) / 2);
+  }
+  
+  // Aggiorna missioni
+  updateMissions('merge', { type: baseType });
+  
+  A.merging = B.merging = true;
+  const totalMass = A.m + B.m;
+  const x = (A.x * A.m + B.x * B.m) / totalMass;
+  const y = (A.y * A.m + B.y * B.m) / totalMass;
+  const vx = (A.vx * A.m + B.vx * B.m) / totalMass;
+  const vy = (A.vy * A.m + B.vy * B.m) / totalMass;
+  balls = balls.filter(b => b !== A && b !== B);
+  const nextIdx = Math.min(idx + 1, TYPES.length - 1);
+  const newType = TYPES[nextIdx];
+  const C = {
+    id: Math.random().toString(36).slice(2),
+    type: newType,
+    x, y, vx, vy,
+    r: RADII[newType],
+    m: MASSE[newType],
+    rest: REST[newType],
+    squash: 0,
+    merging: false,
+    asleep: false,
+    held: false
+  };
+  balls.push(C);
+  if (!SPECIAL_TYPES.has(newType)) {
+    highestTypeIndex = Math.max(highestTypeIndex, nextIdx);
+  }
+  redrawNext();
+  if (newType === 'vortice') {
+    vortexEffect = { x: C.x, y: C.y, duration: 2.0 };
+    floatText('VORTICE!', C.x, C.y - 40);
+    sfx('tink');
+  }
+}
+
+const CHEAT_CODES = {
+  "BALLDROP": () => { enableCheats(); },
+  "GODMODE": () => {
+    score = 999999;
+    level = 99;
+    hasJolly = true;
+    hasFuoco = true;
+    updatePowerupsUI();
+    levelEl.textContent = `LIVELLO ${level}`;
+    scoreEl.textContent = fmt(score);
+    floatText('GOD MODE!', W/2, H/2);
+    sfx('powerup');
+  },
+  "SPAWNGOLF": () => spawnBall(W/2, spawnY, 'golf'),
+  "SPAWNBASKET": () => spawnBall(W/2, spawnY, 'basket'),
+  "SPAWNORO": () => spawnBall(W/2, spawnY, 'oro'),
+  "ADD10K": () => addScore(10000, W/2, 50),
+  "CLEAR": () => { balls = []; floatText('CAMPO LIBERO!', W/2, H/2); },
+  "VORTEX": () => {
+    vortexEffect = { x: W/2, y: H/2, duration: 5.0 };
+    floatText('VORTICE MANUALE!', W/2, H/2 - 40);
+  }
+};
+
+let cheatBuffer = "";
+function enableCheats() {
+  window.cheats = {
+    addScore: (n) => addScore(n, W/2, 50),
+    setLevel: (l) => {
+      level = l;
+      levelEl.textContent = `LIVELLO ${level}`;
+      onLevelUp();
+    },
+    spawn: (type) => spawnBall(W/2, spawnY, type),
+    giveJolly: () => { hasJolly = true; updatePowerupsUI(); floatText('JOLLY!', W/2, 50); },
+    giveFuoco: () => { hasFuoco = true; updatePowerupsUI(); floatText('FUOCO!', W/2, 50); },
+    godMode: () => CHEAT_CODES["GODMODE"](),
+    clear: () => CHEAT_CODES["CLEAR"]()
+  };
+  console.log("%c🎮 TRUCCHI ATTIVATI! Comandi disponibili:", "color: #ffdd00; font-weight: bold");
+  console.log(`- cheats.addScore(1000)`);
+  console.log(`- cheats.setLevel(10)`);
+  console.log(`- cheats.spawn('oro')`);
+  console.log(`- cheats.giveJolly()`);
+  console.log(`- cheats.godMode()`);
+  console.log(`- cheats.clear()`);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (gameOver) return;
+  cheatBuffer += e.key.toUpperCase();
+  if (cheatBuffer.length > 10) {
+    cheatBuffer = cheatBuffer.slice(-10);
+  }
+  for (const [code, action] of Object.entries(CHEAT_CODES)) {
+    if (cheatBuffer.endsWith(code)) {
+      cheatBuffer = "";
+      action();
+      break;
+    }
+  }
+});
+
+function draw() {
+  ctx.save();
+  ctx.fillStyle = grassPat;
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
+  ctx.fillRect(0, 0, W, gameOverY);
+  ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, gameOverY);
+  ctx.lineTo(W, gameOverY);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(8, 8, W - 16, H - 16);
+  ctx.restore();
+  const sortedBalls = [...balls].sort((a, b) => a.y - b.y);
+  for (const b of sortedBalls) {
+    const sprite = spriteCache.get(b.type);
+    if (!sprite) {
+      console.warn(`[draw] Sprite non trovato per '${b.type}', saltato`);
+      continue;
+    }
+    const sx = sprite.width / 2;
+    const sy = sprite.height / 2;
+    const squish = 1 - Math.min(0.3, b.squash * 0.3);
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.scale(1 / squish, squish);
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 4;
+    ctx.drawImage(sprite, -sx, -sy, sprite.width, sprite.height);
+    ctx.restore();
+    b.squash *= 0.7;
+  }
+  if (vortexEffect) {
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.strokeStyle = '#7b68ee';
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 3; i++) {
+      const radius = 40 + i * 20;
+      ctx.beginPath();
+      ctx.arc(vortexEffect.x, vortexEffect.y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  ctx.save();
+  for (const p of particles) {
+    const alpha = 1 - p.t / p.life;
+    if (alpha <= 0) continue;
+    ctx.globalAlpha = alpha;
+    if (p.text) {
+      ctx.font = `bold ${p.size}px sans-serif`;
+      ctx.fillStyle = p.color;
+      ctx.textAlign = 'center';
+      ctx.fillText(p.text, p.x, p.y);
+    } else {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      if (p.rotation !== undefined) ctx.rotate(p.rotation);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+let acc = 0;
+let last = performance.now();
+const dtFixed = 1 / 120;
+
+function loop() {
+  // ✅ BLOCCCO TOTALE - il loop parte SOLO se gameStarted è true
+  if (!gameStarted) {
+    // Disegna solo lo sfondo statico una volta
+    ctx.fillStyle = grassPat;
+    ctx.fillRect(0, 0, W, H);
+    
+    // Scrivi un messaggio sul canvas
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Premi GIOCA per iniziare', W/2, H/2);
+    
+    // ✅ FERMA IL LOOP - non richiamare requestAnimationFrame
+    console.log("Loop bloccato - in attesa di GIOCA");
+    return;
+  }
+  
+  // ✅ SOLO SE IL GIOCO È INIZIATO, esegui il loop normale
+  const now = performance.now();
+  let dt = (now - last) / 1000;
+  last = now;
+  if (dt > 0.2) dt = 0.1;
+  acc += dt;
+  while (acc >= dtFixed && !paused && !gameOver) {
+    update(dtFixed);
+    acc -= dtFixed;
+  }
+  draw();
+  animationFrameId = requestAnimationFrame(loop);
+}
+
+// MULTIPLAYER
+function showMultiplayerLobby() {
+  // Nascondi il menu principale
+  menuOverlay.style.display = 'none';
+  
+  let html = `
+    <div id="multiplayerOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+      <div class="missions-content">
+        <h2>Multiplayer</h2>
+        <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+          <button class="menu-btn" onclick="createMultiplayerRoom()">Crea Stanza</button>
+          <button class="menu-btn" onclick="showJoinRoomInput()">Unisciti a Stanza</button>
+          <button class="menu-btn" onclick="startHotSeatGame()">Hot Seat</button>
+          <button class="menu-btn menu-back" onclick="backToGameModesFromMultiplayer()">Indietro</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function backToGameModesFromMultiplayer() {
+  const overlay = document.getElementById('multiplayerOverlay');
+  if (overlay) overlay.remove();
+  menuOverlay.style.display = 'flex';
+  screenGameModes.classList.add('active');
+}
+// Funzioni placeholder per il multiplayer
+function createMultiplayerRoom() {
+  alert('Funzione multiplayer non ancora implementata');
+  backToGameModesFromMultiplayer();
+}
+
+function showJoinRoomInput() {
+  const roomId = prompt("Inserisci il codice stanza:");
+  if (roomId) {
+    alert(`Tentativo di unirsi alla stanza: ${roomId}`);
+  }
+  backToGameModesFromMultiplayer();
+}
+
+function startHotSeatGame() {
+  alert('Modalità Hot Seat non ancora implementata');
+  backToGameModesFromMultiplayer();
+}
+
+function showJoinRoomInput() {
+  const roomId = prompt("Inserisci il codice stanza:");
+  if (roomId) {
+    multiplayer.joinRoom(roomId);
+  }
+}
+
+function startHotSeatGame() {
+  const hotSeat = new HotSeatMultiplayer({
+    resetGame,
+    score: 0,
+    level: 1,
+    balls: [],
+    update: () => {},
+    spawnBall: (x, y, type) => {
+      const ball = spawnBall(x, y, type);
+      balls.push(ball);
+      return ball;
+    }
+  });
+  hotSeat.startGame();
+}
+
+// Classe HotSeatMultiplayer
+class HotSeatMultiplayer {
+  constructor(gameInstance) {
+    this.game = gameInstance;
+    this.players = [];
+    this.currentPlayerIndex = 0;
+    this.scores = new Map();
+  }
+  
+  addPlayer(name) {
+    const player = {
+      id: this.generateId(),
+      name: name,
+      color: this.getRandomColor()
+    };
+    
+    this.players.push(player);
+    this.scores.set(player.id, 0);
+    
+    return player;
+  }
+  
+  generateId() {
+    return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+  }
+  
+  getRandomColor() {
+    const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+  
+  startGame() {
+    if (this.players.length < 2) {
+      this.addPlayer('Giocatore 1');
+      this.addPlayer('Giocatore 2');
+    }
+    
+    this.currentPlayerIndex = 0;
+    this.showTurnIndicator();
+    this.game.resetGame();
+  }
+  
+  nextTurn() {
+    const currentPlayer = this.players[this.currentPlayerIndex];
+    this.scores.set(currentPlayer.id, this.game.score);
+    
+    this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+    
+    this.game.resetGame();
+    this.showTurnIndicator();
+  }
+  
+  showTurnIndicator() {
+    const player = this.players[this.currentPlayerIndex];
+    floatText(`Tocca a ${player.name}`, W/2, H/2);
+    this.showHotSeatHUD();
+  }
+  
+  showHotSeatHUD() {
+    const hudHTML = this.players.map((player, index) => `
+      <div class="player-score ${index === this.currentPlayerIndex ? 'active' : ''}">
+        ${player.name}: ${this.scores.get(player.id) || 0}
+      </div>
+    `).join('');
+    
+    let hud = document.getElementById('hotSeatHUD');
+    if (!hud) {
+      hud = document.createElement('div');
+      hud.id = 'hotSeatHUD';
+      hud.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: rgba(0,0,0,0.7);
+        padding: 10px;
+        border-radius: 10px;
+        color: white;
+        z-index: 100;
+      `;
+      document.body.appendChild(hud);
+    }
+    
+    hud.innerHTML = hudHTML;
+  }
+  
+  endGame() {
+    const winner = this.players.reduce((prev, current) => 
+      (this.scores.get(current.id) > this.scores.get(prev.id)) ? current : prev
+    );
+    
+    floatText(`Vince ${winner.name}!`, W/2, H/2);
+  }
+}
+
+function showMissionsOverlay() {
+  // Verifica se sono passate 24 ore dall'ultimo reset
+  const lastReset = localStorage.getItem('missionsLastReset');
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  if (!lastReset || now - parseInt(lastReset) > oneDay) {
+    missions.forEach(m => {
+      m.completed = false;
+      m.current = 0;
+    });
+    localStorage.setItem('missionsLastReset', now.toString());
+  }
+
+  const existingOverlay = document.getElementById('missionsOverlay');
+  if (existingOverlay) {
+    existingOverlay.remove();
+  }
+
+  let html = `
+    <div class="missions-content">
+      <h3>MISSIONI</h3>
+  `;
+  
+  for (const m of missions) {
+    html += `
+      <div class="mission-item ${m.completed ? 'completed' : m.current >= m.target ? 'completed' : ''}">
+        ${m.text} (${m.current}/${m.target})
+      </div>
+    `;
+  }
+  
+  html += `<button class="restart" id="startMissionsBtn">INIZIA</button>`;
+  html += `<button class="menu-btn menu-back" id="backMissionsBtn">INDIETRO</button>`;
+  html += `</div>`;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'missionsOverlay';
+  overlay.className = 'overlay visible';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    const startBtn = document.getElementById('startMissionsBtn');
+    const backBtn = document.getElementById('backMissionsBtn');
+    
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        overlay.remove();
+        startGame();
+      });
+    }
+    
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        overlay.remove();
+        showGameModes();
+      });
+    }
+  }, 0);
+}
+
+function showGameModes() {
+  screenMain.classList.remove('active');
+  screenGameModes.classList.add('active');
+}
+
+function completeMissionEffect(x, y) {
+    sfx('powerup');
+    floatText('🎯 MISSIONE COMPLETATA!', x, y);
+
+    for (let i = 0; i < 30; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 120,
+            vy: (Math.random() - 0.5) * 120,
+            life: 1,
+            t: 0,
+            color: ['#ff0', '#0ff', '#f0f', '#fff'][Math.floor(Math.random() * 4)],
+            size: Math.random() * 3 + 2
+        });
+    }
+
+    const gameEl = document.getElementById('game');
+    gameEl.style.transition = 'transform 0.1s ease';
+    let intensity = 6;
+    function shake() {
+        const r = (a, b) => a + Math.random() * (b - a);
+        gameEl.style.transform = `translate(${r(-intensity, intensity)}, ${r(-intensity, intensity)})`;
+        if (intensity > 0) {
+            intensity -= 0.8;
+            requestAnimationFrame(shake);
+        } else {
+            gameEl.style.transform = '';
+        }
+    }
+    shake();
+}
+
+function updateMissions(action, data) {
+  for (const m of missions) {
+    if (m.completed) continue;
+
+    if (m.id === 'fuse_3_golf' && action === 'merge' && data.type === 'golf') {
+      m.current++;
+      if (m.current >= m.target) {
+        m.completed = true;
+        completeMissionEffect(W/2, H/2);
+        addScore(100, W/2, H/2);
+      }
+    }
+    if (m.id === 'fuse_2_vetro' && action === 'merge' && data.type === 'vetro') {
+      m.current++;
+      if (m.current >= m.target) {
+        m.completed = true;
+        completeMissionEffect(W/2, H/2);
+        addScore(200, W/2, H/2);
+      }
+    }
+    if (m.id === 'drop_10_bombs' && action === 'spawn' && data.type === 'bomba') {
+      m.current++;
+      if (m.current >= m.target) {
+        m.completed = true;
+        completeMissionEffect(W/2, H/2);
+        addScore(150, W/2, H/2);
+      }
+    }
+    if (m.id === 'score_5000' && action === 'score') {
+      m.current = score;
+      if (score >= m.target) {
+        m.completed = true;
+        completeMissionEffect(W/2, H/2);
+        addScore(500, W/2, H/2);
+      }
+    }
+  }
+  
+  localStorage.setItem('ballDropMissions', JSON.stringify(missions));
+}
+
+// ==========================
+// CLASSE Multiplayer
+// ==========================
+class BallDropMultiplayer {
+    constructor(gameInstance) {
+        this.game = gameInstance;
+        this.connections = new Map();
+        this.players = new Map();
+        this.localPlayer = {
+            id: this.generateId(),
+            name: 'Player_' + Math.floor(Math.random() * 1000),
+            score: 0,
+            ready: false
+        };
+        this.roomId = null;
+        this.isHost = false;
+        this.dataChannel = null;
+        this.peer = null;
+        this.syncInterval = null;
+        this.lastSync = 0;
+        this.gameMode = null;
+
+        this.setupEventListeners();
+    }
+
+    generateId() {
+        return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    }
+
+    setupEventListeners() {
+        window.addEventListener('storage', this.handleStorageEvent.bind(this));
+        window.addEventListener('hashchange', this.handleHashChange.bind(this));
+    }
+
+    handleHashChange() {
+        const hash = window.location.hash.substring(1);
+        if (hash && !this.roomId) {
+            this.joinRoom(hash);
+        }
+    }
+
+    createRoom(roomName = 'BallDrop Room') {
+        this.roomId = Math.random().toString(36).substr(2, 8);
+        this.isHost = true;
+        window.location.hash = this.roomId;
+
+        this.broadcastSignal({
+            type: 'room_created',
+            roomId: this.roomId,
+            roomName: roomName,
+            host: this.localPlayer.id,
+            player: this.localPlayer,
+            timestamp: Date.now()
+        });
+
+        this.setupPeerConnection();
+        this.showLobby();
+        return this.roomId;
+    }
+
+    joinRoom(roomId) {
+        this.roomId = roomId;
+        window.location.hash = roomId;
+
+        this.broadcastSignal({
+            type: 'join_request',
+            roomId: roomId,
+            player: this.localPlayer,
+            timestamp: Date.now()
+        });
+
+        this.setupPeerConnection();
+    }
+
+    setupPeerConnection() {
+        try {
+            this.peer = new Peer(this.localPlayer.id, {
+                host: '0.peerjs.com',
+                port: 443,
+                secure: true,
+                debug: 2
+            });
+
+            this.peer.on('open', (id) => {
+                console.log('PeerJS aperto:', id);
+            });
+
+            this.peer.on('connection', (conn) => {
+                this.setupDataChannel(conn);
+            });
+
+            this.peer.on('error', (err) => {
+                console.error('Errore PeerJS:', err);
+                this.fallbackToHotSeat();
+            });
+        } catch (e) {
+            console.error("PeerJS non disponibile:", e);
+            this.fallbackToHotSeat();
+        }
+    }
+
+    setupDataChannel(conn) {
+        conn.on('open', () => {
+            console.log('Connessione stabilita con:', conn.peer);
+            this.connections.set(conn.peer, conn);
+
+            if (this.isHost) {
+                setTimeout(() => this.syncFullGameState(), 500);
+            }
+
+            this.showMessage(`Connesso a ${conn.peer}`);
+        });
+
+        conn.on('data', (data) => {
+            this.handleGameData(data);
+        });
+
+        conn.on('close', () => {
+            this.connections.delete(conn.peer);
+            this.showMessage('Connessione persa');
+        });
+
+        this.dataChannel = conn;
+    }
+
+    connectToPlayer(playerId) {
+        const conn = this.peer.connect(playerId);
+        this.setupDataChannel(conn);
+    }
+
+    broadcastSignal(signal) {
+        const signalData = {
+            ...signal,
+            from: this.localPlayer.id,
+            roomId: this.roomId
+        };
+        localStorage.setItem('ballDrop_signal', JSON.stringify(signalData));
+        setTimeout(() => localStorage.removeItem('ballDrop_signal'), 5000);
+    }
+
+    handleStorageEvent(event) {
+        if (event.key !== 'ballDrop_signal' || !event.newValue) return;
+        try {
+            const signal = JSON.parse(event.newValue);
+            if (signal.roomId !== this.roomId) return;
+            this.processSignal(signal);
+        } catch (e) {
+            console.error('Errore parsing signal:', e);
+        }
+    }
+
+    processSignal(signal) {
+        switch (signal.type) {
+            case 'room_created':
+                if (!this.isHost) {
+                    this.showMessage(`Stanza trovata: ${signal.roomName}`);
+                    this.joinRoom(signal.roomId);
+                }
+                break;
+
+            case 'join_request':
+                if (this.isHost && signal.player.id !== this.localPlayer.id) {
+                    this.approveJoinRequest(signal);
+                }
+                break;
+
+            case 'join_approved':
+                if (!this.isHost && signal.to === this.localPlayer.id) {
+                    this.connectToPlayer(signal.host);
+                }
+                break;
+
+            case 'game_start':
+                this.startMultiplayerGame();
+                break;
+        }
+    }
+
+    approveJoinRequest(signal) {
+        this.broadcastSignal({
+            type: 'join_approved',
+            to: signal.player.id,
+            host: this.localPlayer.id,
+            roomId: this.roomId
+        });
+        this.connectToPlayer(signal.player.id);
+    }
+
+    syncFullGameState() {
+        if (!this.dataChannel) return;
+        const state = {
+            type: 'full_sync',
+            balls: this.game.balls.map(b => ({
+                x: b.x, y: b.y, type: b.type, vx: b.vx, vy: b.vy, r: b.r, asleep: b.asleep
+            })),
+            score: this.game.score,
+            level: this.game.level,
+            player: this.localPlayer,
+            timestamp: Date.now()
+        };
+        this.sendData(state);
+    }
+
+    syncGameUpdate() {
+        if (!this.dataChannel || this.lastSync + 100 > Date.now()) return;
+        const update = {
+            type: 'game_update',
+            balls: this.game.balls.slice(0, 10).map(b => ({ x: b.x, y: b.y, type: b.type })),
+            score: this.game.score,
+            level: this.game.level
+        };
+        this.sendData(update);
+        this.lastSync = Date.now();
+    }
+
+    sendData(data) {
+        if (this.dataChannel && this.dataChannel.readyState === 'open') {
+            this.dataChannel.send(JSON.stringify(data));
+        }
+    }
+
+    handleGameData(data) {
+        try {
+            const packet = JSON.parse(data);
+            this.processGameData(packet);
+        } catch (e) {
+            console.error('Errore dati:', e);
+        }
+    }
+
+    processGameData(packet) {
+        switch (packet.type) {
+            case 'full_sync':
+                this.applyFullSync(packet);
+                break;
+            case 'game_update':
+                this.applyGameUpdate(packet);
+                break;
+            case 'player_action':
+                this.handlePlayerAction(packet);
+                break;
+        }
+    }
+
+    applyFullSync(packet) {
+        this.game.balls = [];
+        for (const b of packet.balls) {
+            this.game.spawnBall(b.x, b.y, b.type).then(ball => {
+                if (ball) {
+                    ball.vx = b.vx || 0;
+                    ball.vy = b.vy || 0;
+                    ball.asleep = b.asleep || false;
+                }
+            });
+        }
+        this.game.score = packet.score;
+        this.game.level = packet.level;
+        this.updateUI();
+    }
+
+    applyGameUpdate(packet) {
+        for (let i = 0; i < Math.min(packet.balls.length, this.game.balls.length); i++) {
+            const local = this.game.balls[i];
+            const remote = packet.balls[i];
+            local.x = remote.x;
+            local.y = remote.y;
+        }
+        this.game.score = packet.score;
+        this.game.level = packet.level;
+        this.updateUI();
+    }
+
+    handlePlayerAction(action) {
+        if (action.action === 'spawn_ball') {
+            this.game.spawnBall(action.data.x, action.data.y, action.data.type);
+        }
+    }
+
+    updateUI() {
+        const scoreEl = document.getElementById('score');
+        const levelEl = document.getElementById('level');
+        if (scoreEl) scoreEl.textContent = 'PUNTEGGIO ' + String(this.game.score).padStart(6, '0');
+        if (levelEl) levelEl.textContent = `LIVELLO ${this.game.level}`;
+    }
+
+    startMultiplayerGame() {
+        this.showMessage("🎮 Partita avviata!");
+        this.game.resetGame();
+
+        this.syncInterval = setInterval(() => {
+            this.syncGameUpdate();
+        }, 100);
+    }
+
+    showLobby() {
+        const html = `
+          <div class="multiplayer-overlay">
+            <div class="lobby">
+              <h2>🎮 ${this.isHost ? 'Hai creato' : 'Sei entrato in'} una stanza</h2>
+              <p><strong>Codice:</strong> <code style="color:#a8ff80;">${this.roomId}</code></p>
+              <div style="margin: 20px 0;">
+                <button id="btnCoop">Cooperative</button>
+                <button id="btnVersus">Versus</button>
+              </div>
+              <button id="btnLeave">Esci</button>
+            </div>
+          </div>`;
+        const overlay = document.createElement('div');
+        overlay.id = 'multiplayerOverlay';
+        overlay.innerHTML = html;
+        overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;z-index:1000;";
+        document.body.appendChild(overlay);
+
+        document.getElementById('btnCoop').addEventListener('click', () => this.startCoopMode());
+        document.getElementById('btnVersus').addEventListener('click', () => this.startVersusMode());
+        document.getElementById('btnLeave').addEventListener('click', () => this.leaveRoom());
+    }
+
+    hideOverlay() {
+        const el = document.getElementById('multiplayerOverlay');
+        if (el) el.remove();
+    }
+
+    showMessage(text) {
+        floatText(text, W / 2, H / 2);
+    }
+
+    fallbackToHotSeat() {
+        this.showMessage("🌐 Connessione fallita → Modalità HOT SEAT");
+        startHotSeatGame();
+    }
+
+    leaveRoom() {
+        if (this.syncInterval) clearInterval(this.syncInterval);
+        if (this.peer) this.peer.destroy();
+        window.location.hash = '';
+        this.hideOverlay();
+        this.showMessage("🚪 Sei uscito dalla stanza");
+        showGameModes();
+    }
+
+    startCoopMode() {
+        this.gameMode = 'coop';
+        this.hideOverlay();
+        this.showMessage("🤝 Cooperativa: lavorate insieme!");
+        this.startMultiplayerGame();
+    }
+
+    startVersusMode() {
+        this.gameMode = 'versus';
+        this.hideOverlay();
+        this.showMessage("⚔️ Versus: chi fa più punti?");
+        this.startMultiplayerGame();
+    }
+}
+
+// INIZIALIZZA MULTIPLAYER
+const multiplayer = new BallDropMultiplayer({
+    resetGame,
+    score: 0,
+    level: 1,
+    balls: [],
+    update: () => {},
+    spawnBall: (x, y, type) => {
+        const ball = spawnBall(x, y, type);
+        if (ball) balls.push(ball);
+        return ball;
+    }
+});
+// Sistema di caricamento SEMPLIFICATO
+function showLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  if (loadingScreen) {
+    loadingScreen.style.display = 'flex';
+    loadingScreen.classList.remove('hidden');
+  }
+}
+
+function hideLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  if (!loadingScreen) return;
+  // class 'hidden' applica l'animazione; poi rimuoviamo il nodo dopo la transizione
+  loadingScreen.classList.add('hidden');
+  setTimeout(() => {
+    if (loadingScreen.parentNode) loadingScreen.parentNode.removeChild(loadingScreen);
+  }, 900); // leggermente più lungo della transition CSS (0.8s)
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Ball Drop - Gioco inizializzato');
+  // Assicurati che il menu principale sia visibile all'avvio
+  menuOverlay.style.display = 'flex';
+  screenMain.classList.add('active');
+  
+  // ✅ NON avviare il loop qui!
+  // Il loop partirà SOLO quando l'utente preme "GIOCA"
+});
+
+function switchScreen(fromScreen, toScreen) {
+  if (fromScreen) {
+    fromScreen.classList.add('exiting');
+    setTimeout(() => {
+      fromScreen.classList.remove('active', 'exiting');
+      toScreen.classList.add('active');
+    }, 400);
+  } else {
+    toScreen.classList.add('active');
+  }
+}
+
+function enhancePlayButton() {
+  const playBtn = document.getElementById('btnPlay');
+  if (playBtn) {
+    playBtn.classList.add('play-btn-animated');
+  }
+}
+
+
+function onGameReady() {
+  console.log('Gioco pronto!');
+  // Nascondi loader (se ancora presente)
+  hideLoadingScreen();
+  // Mostra menu principale in modo chiaro e coerente
+  const menu = document.getElementById('menu-overlay');
+  if (menu) {
+    menu.style.display = 'flex';
+    // assicurati che la schermata principale sia attiva
+    const screenMain = document.getElementById('screen-main');
+    if (screenMain) {
+      screenMain.classList.add('active');
+      screenMain.setAttribute('aria-hidden', 'false');
+    }
+  }
+}
+
+
+function changeThemeSmoothly(newTheme) {
+  const overlay = document.createElement('div');
+  overlay.className = 'theme-transition';
+  document.body.appendChild(overlay);
+
+  setTimeout(() => overlay.style.opacity = '1', 10);
+
+  setTimeout(() => {
+    applyTheme(newTheme);
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+    }, 500);
+  }, 500);
+}
+
+function jollySelectedEffect(type) {
+  floatText(`JOLLY: ${type.toUpperCase()}!`, W/2, H/2);
+  sfx('tink');
+
+  const flash = document.createElement('div');
+  flash.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 900;
+    transition: opacity 0.2s;
+  `;
+  document.body.appendChild(flash);
+  
+  setTimeout(() => { 
+    flash.style.opacity = '0.7'; 
+  }, 10);
+  
+  setTimeout(() => { 
+    flash.style.opacity = '0'; 
+  }, 100);
+  
+  setTimeout(() => {
+    if (flash.parentNode) {
+      flash.parentNode.removeChild(flash);
+    }
+  }, 300);
+}
+
+// INIZIALIZZA ANIMAZIONI
+document.addEventListener('DOMContentLoaded', function() {
+  showLoadingScreen();
+  enhancePlayButton();
+  
+  setTimeout(() => {
+    hideLoadingScreen();
+    onGameReady();
+  }, 2000);
+});
+
+btnPlay.addEventListener('click', function() {
+  if (!spritesLoaded) {
+    floatText('Caricamento...', W/2, H/2);
+    return;
+  }
+  
+  // Nasconde subito la schermata principale
+  screenMain.classList.remove('active');
+  screenMain.classList.add('exiting');
+
+  // Mostra la schermata delle modalità
+  screenGameModes.classList.add('active');
+
+  // Dopo l'animazione, rimuove 'exiting' dal main
+  setTimeout(() => {
+    screenMain.classList.remove('exiting');
+  }, 300); // stessa durata della transizione in CSS
+});
+
+btnOptions.addEventListener('click', function() {
+  switchScreen(screenMain, screenOptions);
+});
+
+btnCredits.addEventListener('click', function() {
+  switchScreen(screenMain, screenCredits);
+});
+
+btnBackOptions.addEventListener('click', function() {
+  switchScreen(screenOptions, screenMain);
+});
+
+btnBackCredits.addEventListener('click', function() {
+  switchScreen(screenCredits, screenMain);
+});
+
+btnBackModes.addEventListener('click', function() {
+  switchScreen(screenGameModes, screenMain);
+});
+
+btnSelectJolly.addEventListener('click', () => {
+  const type = jollySelectableTypes[jollySelectionIndex];
+  jollySelectedEffect(type);
+  
+  spawnBall(W/2, spawnY, type).then(ball => {
+    if (!ball) return;
+    ball.held = true;
+    ball.asleep = false;
+    heldBall = ball;
+    setTimeout(() => {
+      ball.held = false;
+      heldBall = null;
+      jollySelector.classList.remove('visible');
+      jollySelector.classList.add('hidden');
+      hasJolly = false;
+      updatePowerupsUI();
+    }, 50);
+  }).catch(()=>{});
+  jollySelectionIndex = 0;
+});
+// Inizializzazione al caricamento della pagina
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Ball Drop - Gioco inizializzato');
+  // Assicurati che il menu principale sia visibile all'avvio
+  menuOverlay.style.display = 'flex';
+  screenMain.classList.add('active');
+});
+
+})();
+</script>
+</body>
+</html>
