@@ -70,8 +70,7 @@ Obiettivo: ottenere il punteggio più alto possibile!
 - JavaScript: logica di gioco, fisica, collisioni, UI  
 - CSS: stile, effetti visivi e layout responsive  
 
-Il gioco è realizzato in un unico file HTML per semplicità e portabilità. Non richiede librerie esterne.
-
+Il codice del gioco è disponibile in src
 ## Gioca ora
 
 Puoi giocare a Ball Drop scaricando l'apk direttamente da GitHub Releases [Link dell'ultima versione disponibile](https://github.com/Mirko-linux/Ball-Drop/releases/tag/Ball-Drop_2.0), in alternativa puoi giocare al gioco direttamente dal browser sulla pagina itch.io di Ball Drop [Link della pagina di Itch.io](https://mirkodonatogames.itch.io/ball-drop)
