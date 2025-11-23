@@ -13,9 +13,14 @@
       flex-direction: column; 
     }
     .hidden { display: none !important; }
-
-    /* === MISSIONI === */
+/* === MISSIONI === */
     #missionsOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1000; /* Assicurati che sia sopra a tutto */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -24,60 +29,206 @@
     }
 
     .missions-content {
+      background: #1a3a2a; /* Sfondo scuro per il pannello */
+      border: 3px solid #66ff66; /* Bordo verde neon */
+      box-shadow: 0 0 15px rgba(102, 255, 102, 0.7); /* Effetto neon */
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80%;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .missions-header {
+      position: relative;
+      text-align: center;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #336633;
+    }
+
+    .missions-title {
+      color: #e0ffe0;
+      font-size: 1.8em;
+      margin: 0;
+      text-shadow: 0 0 5px #66ff66; /* Sfumatura al titolo */
+    }
+
+    .btn-close {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: none;
+      border: none;
+      color: #66ff66;
+      font-size: 1.5em;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 5px;
+    }
+    
+    .btn-close:hover {
+        color: #e0ffe0;
+    }
+
+    .missions-list {
+      flex-grow: 1;
+      overflow-y: auto; /* Scorrevolezza per la lista missioni */
+      padding-right: 10px; /* Spazio per la scrollbar */
+    }
+
+    /* Stile per ogni missione */
+    .mission-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #234d35; /* Sfondo più chiaro per l'item */
+      border: 1px solid #336633;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+    
+    /* Stili per stati delle missioni */
+    .mission-item.completed {
+        border-left: 5px solid #00ff00; /* Striscia verde per completato */
+        opacity: 0.8;
+    }
+    
+    .mission-item.in-progress {
+        border-left: 5px solid #ffff00; /* Giallo per in corso */
+    }
+    
+    .mission-item.todo {
+        border-left: 5px solid #888; /* Grigio per da fare */
+    }
+
+    .mission-info {
+      flex-grow: 1;
+      margin-right: 10px;
+    }
+
+    .mission-description {
+      margin: 0 0 5px 0;
+      font-size: 1em;
+      color: #e0ffe0;
+    }
+
+    .mission-progress {
+      display: flex;
+      align-items: center;
+    }
+
+    .progress-bar-container {
+      width: 100px;
+      height: 8px;
+      background: #0d281a;
+      border-radius: 4px;
+      margin-right: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #336633, #66ff66);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-size: 0.8em;
+      color: #66ff66;
+    }
+
+    .mission-reward {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
-      padding: 30px;
-      border-radius: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      max-width: 90%;
-      width: 400px;
-    }
-
-    .mission-item {
-      width: 100%;
-      padding: 15px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #e0ffe0;
-      text-align: left;
-    }
-
-    .mission-item.completed {
-      background: rgba(40, 167, 69, 0.2);
-      color: #a8ff80;
-    }
-
-    .mission-item.active {
-      border-color: #a8ff80;
-      box-shadow: 0 0 10px rgba(168, 255, 128, 0.3);
-    }
-
-    /* === MENU SYSTEM === */
-    #menu-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(5, 30, 10, 0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      z-index: 100;
-      display: flex;
-      flex-direction: column; /* <<< aggiungi questa riga */
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    .menu-screen {
-      display: none;
       text-align: center;
-      max-width: 400px;
-      width: 90%;
     }
-    .menu-screen.active {
-      display: block;
+
+    .reward-amount {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ffcc00; /* Colore per le monete */
+      text-shadow: 0 0 3px rgba(255, 204, 0, 0.5);
+      margin-bottom: 5px;
+    }
+
+    .currency-icon {
+        font-size: 1.2em;
+        line-height: 1;
+        margin-left: 2px;
+    }
+
+    /* Stile per i pulsanti */
+    .btn-claim {
+      background: linear-gradient(180deg, #66ff66, #33cc33);
+      color: #1a3a2a;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+      transition: background 0.2s;
+      min-width: 80px;
+    }
+
+    .btn-claim:not(:disabled):hover {
+      background: linear-gradient(180deg, #99ff99, #66ff66);
+    }
+    
+    .btn-claim:disabled {
+        background: #444;
+        color: #aaa;
+        cursor: not-allowed;
+    }
+
+    /* Stato Riscattato */
+    .btn-claim.claimed {
+        background: #336633;
+        color: #aaffaa;
+        cursor: default;
+        box-shadow: none;
+    }
+
+#menu-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;   /* centro verticale */
+  align-items: center;       /* centro orizzontale */
+  flex-direction: column;
+  background: rgba(5, 30, 10, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 100;
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.menu-screen {
+  display: none;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  margin: 0 auto;           /* centra l’elemento */
+}
+
+.menu-screen.active {
+  display: flex;             /* cambia da block a flex */
+  flex-direction: column;    /* per impilare titolo e bottoni */
+  align-items: center;       /* centra orizzontalmente */
+  justify-content: center;   /* centra verticalmente */
+
+
     }
     .menu-title {
       font-size: 36px;
@@ -511,6 +662,32 @@
       align-items: center;
       gap: 10px;
     }
+.missions-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.mission-item {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e0ffe0;
+  text-align: left;
+  font-size: 14px;
+}
+
+.mission-item.completed {
+  background: rgba(40, 167, 69, 0.2);
+  color: #a8ff80;
+  border-color: #28a745;
+}
     .preview-name {
       font-size: 18px;
       color: #ffd700;
@@ -617,7 +794,7 @@
       overflow: hidden;
     }
 
-    #screen-main, .screen-wrapper {
+    #screen-main, #screen-main, .screen-wrapper {
       position: absolute;
       inset: 0;
       display: flex;
