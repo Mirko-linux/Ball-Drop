@@ -1,3 +1,4 @@
+  <link rel="stylesheet" href="style.css">
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -29,12 +30,13 @@
       <button class="menu-btn" id="btnCredits" type="button">📜 CREDITI</button>
     </div>
 
-    <!-- SCHERMATA MODALITÀ DI GIOCO -->
-    <div class="menu-screen" id="screen-game-modes" aria-hidden="true">
+
+<div class="menu-screen" id="screen-game-modes" aria-hidden="true">
       <div class="menu-title">MODALITÀ</div>
       <button class="menu-btn" id="btnModeClassic" type="button">🎯 CLASSICA</button>
-      <button class="menu-btn" id="btnModeMissions" type="button">🎯 MISSIONI</button>
-      <button class="menu-btn" id="btnModeMultiplayer" type="button">🎯 MULTIPLAYER</button>
+      <button class="menu-btn" id="btnModeMissions" type="button">🎯 MISSIONI</button> 
+<button class="menu-btn" 
+id="btnModeMultiplayer" type="button">🎯 MULTIPLAYER</button>
       <button class="menu-btn menu-back" id="btnBackModes" type="button">← INDIETRO</button>
     </div>
 
@@ -70,6 +72,7 @@
           <option value="erba">Erba</option>
           <option value="legno">Legno</option>
           <option value="scacchiera">Scacchiera</option>
+          <option value="natalizio">Natalizio 🎄</option>
         </select>
       </div>
 
@@ -80,6 +83,68 @@
 
       <button class="menu-btn menu-back" id="btnBackOptions" type="button">← INDIETRO</button>
     </div>
+
+<div class="menu-screen" id="screen-missions" aria-hidden="true">
+        <div class="missions-header">
+            <button id="btnCloseMissions" class="btn-close">X</button>
+            <h2 class="missions-title">Missioni 🎯</h2>
+        </div>
+
+        <div class="missions-list">
+            <div class="mission-item completed">
+                <div class="mission-info">
+                    <p class="mission-description">Unisci 5 oggetti di livello 2</p>
+                    <div class="mission-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                        </div>
+                        <span class="progress-text">5/5</span>
+                    </div>
+                </div>
+                <div class="mission-reward">
+                    <span class="reward-amount">500</span>
+                    <span class="currency-icon">🪙</span>
+                    <button class="btn-claim claimed">Riscattato</button>
+                </div>
+            </div>
+
+            <div class="mission-item in-progress">
+                <div class="mission-info">
+                    <p class="mission-description">Raggiungi il livello 3 della zona di gioco</p>
+                    <div class="mission-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 60%;"></div>
+                        </div>
+                        <span class="progress-text">3/5</span>
+                    </div>
+                </div>
+                <div class="mission-reward">
+                    <span class="reward-amount">1200</span>
+                    <span class="currency-icon">🪙</span>
+                    <button class="btn-claim" disabled>Riscatti</button>
+                </div>
+            </div>
+
+            <div class="mission-item todo">
+                <div class="mission-info">
+                    <p class="mission-description">Colleziona 100 monete</p>
+                    <div class="mission-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 0%;"></div>
+                        </div>
+                        <span class="progress-text">0/100</span>
+                    </div>
+                </div>
+                <div class="mission-reward">
+                    <span class="reward-amount">300</span>
+                    <span class="currency-icon">🪙</span>
+                    <button class="btn-claim" disabled>Riscatti</button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
 
     <!-- SCHERMATA CREDITI -->
     <div class="menu-screen" id="screen-credits" aria-hidden="true">
@@ -104,7 +169,15 @@
       <button class="pause-close" id="btnClosePause" type="button" aria-label="Chiudi">×</button>
     </div>
   </div>
-
+<!-- SCHERMATA MISSIONI -->
+<div class="menu-screen" id="screen-missions" aria-hidden="true">
+  <div class="menu-title">MISSIONI</div>
+  <div id="missionsList" class="missions-list">
+    <!-- Le missioni verranno caricate qui dinamicamente -->
+  </div>
+  <button class="menu-btn" id="btnStartMissions" type="button">🎯 INIZIA MISSIONI</button>
+  <button class="menu-btn menu-back" id="btnBackMissions" type="button">← INDIETRO</button>
+</div>
   <!-- SELEZIONE JOLLY -->
   <div id="jollySelector" class="overlay hidden" role="dialog" aria-hidden="true" aria-label="Seleziona Jolly">
     <div class="selector-content">
@@ -432,6 +505,9 @@ const btnCredits = document.getElementById('btnCredits');
 const btnBackOptions = document.getElementById('btnBackOptions');
 const btnBackCredits = document.getElementById('btnBackCredits');
 const btnToggleAudio = document.getElementById('btnToggleAudio');
+const screenMissions = document.getElementById('screen-missions');
+const btnStartMissions = document.getElementById('btnStartMissions');
+const btnMissions = document.getElementById('btnModeMissions');
 const btnEnableCheats = document.getElementById('btnEnableCheats');
 
 
@@ -455,30 +531,193 @@ const previewCtx = previewCanvas.getContext('2d');
 // === Parametri per la logica di game-over nella "linea rossa" ==========
 const DANGER_STILL_SPEED = 20;    // px/s -> sotto questo valore la palla è considerata "ferma"
 const DANGER_TIME_LIMIT  = 5.0;   // secondi nella zona rossa prima del game over
-
-// MISSIONI
+// 🎯 SISTEMA MISSIONI REALE
 let missions = [
-  { id: 'fuse_3_golf', text: 'Fai fondere 3 palle da golf', completed: false, target: 3, current: 0 },
-  { id: 'fuse_2_vetro', text: 'Fai fondere 2 palle di vetro', completed: false, target: 2, current: 0 },
-  { id: 'drop_10_bombs', text: 'Lascia cadere 10 bombe', completed: false, target: 10, current: 0 },
-  { id: 'score_5000', text: 'Raggiungi 5000 punti', completed: false, target: 5000, current: 0 }
+  { 
+    id: 'fuse_5_level2', 
+    text: 'Unisci 5 oggetti di livello 2', 
+    completed: false, 
+    claimed: false,
+    target: 5, 
+    current: 0,
+    reward: 50
+  },
+  { 
+    id: 'reach_level3', 
+    text: 'Raggiungi il livello 3 della zona di gioco', 
+    completed: false, 
+    claimed: false,
+    target: 3, 
+    current: 0,
+    reward: 1200 
+  },
+  { 
+    id: 'collect_100_coins', 
+    text: 'Colleziona 100 monete', 
+    completed: false, 
+    claimed: false,
+    target: 100, 
+    current: 0,
+    reward: 300 
+  }
 ];
 
-// POI CARICA I DATI SALVATI
-const savedMissions = localStorage.getItem('ballDropMissions');
-if (savedMissions) {
-  try {
-    const parsedMissions = JSON.parse(savedMissions);
-    // Aggiorna le missioni predefinite con i progressi salvati
-    missions = missions.map(defaultMission => {
-      const savedMission = parsedMissions.find(m => m.id === defaultMission.id);
-      return savedMission ? { ...defaultMission, ...savedMission } : defaultMission;
-    });
-    console.log('Missioni caricate con successo');
-  } catch (e) {
-    console.log('Impossibile caricare missioni salvate, uso quelle predefinite:', e);
+// Carica missioni salvate
+function loadMissions() {
+  const savedMissions = localStorage.getItem('ballDropMissions');
+  if (savedMissions) {
+    try {
+      const parsed = JSON.parse(savedMissions);
+      missions = parsed;
+    } catch (e) {
+      console.log('Reset missioni: errore nel caricamento');
+      resetMissions();
+    }
   }
 }
+
+// Salva missioni
+function saveMissions() {
+  localStorage.setItem('ballDropMissions', JSON.stringify(missions));
+}
+
+// Reset missioni (se necessario)
+function resetMissions() {
+  missions = [
+    { id: 'fuse_5_level2', text: 'Unisci 5 oggetti di livello 2', completed: false, claimed: false, target: 5, current: 0, reward: 50 },
+    { id: 'reach_level3', text: 'Raggiungi il livello 3 della zona di gioco', completed: false, claimed: false, target: 3, current: 0, reward: 1200 },
+    { id: 'collect_100_coins', text: 'Colleziona 100 monete', completed: false, claimed: false, target: 100, current: 0, reward: 300 }
+  ];
+  saveMissions();
+}
+
+// Aggiorna missioni durante il gioco
+function updateMissions(action, data) {
+  let changed = false;
+  
+  for (const mission of missions) {
+    if (mission.claimed) continue;
+    
+    switch (mission.id) {
+      case 'fuse_5_level2':
+        if (action === 'merge' && data.typeIndex === 2) { // livello 2 = index 2 in TYPES
+          mission.current++;
+          changed = true;
+        }
+        break;
+        
+      case 'reach_level3':
+        if (action === 'level_up') {
+          mission.current = Math.max(mission.current, data.level);
+          changed = true;
+        }
+        break;
+        
+      case 'collect_100_coins':
+        if (action === 'score') {
+          mission.current = Math.min(data.score, mission.target);
+          changed = true;
+        }
+        break;
+    }
+    
+    // Controlla se la missione è completata
+    if (!mission.completed && mission.current >= mission.target) {
+      mission.completed = true;
+      changed = true;
+    }
+  }
+  
+  if (changed) {
+    saveMissions();
+    updateMissionsUI();
+  }
+}
+
+// Aggiorna UI missioni
+function updateMissionsUI() {
+  const missionsList = document.getElementById('missionsList');
+  if (!missionsList) return;
+  
+  missionsList.innerHTML = '';
+  
+  missions.forEach(mission => {
+    const missionEl = document.createElement('div');
+    missionEl.className = `mission-item ${mission.completed ? 'completed' : ''} ${mission.claimed ? 'claimed' : ''}`;
+    
+    const progressPercent = (mission.current / mission.target) * 100;
+    
+    missionEl.innerHTML = `
+      <div class="mission-info">
+        <p class="mission-description">${mission.text}</p>
+        <div class="mission-progress">
+          <div class="progress-bar-container">
+            <div class="progress-bar" style="width: ${progressPercent}%;"></div>
+          </div>
+          <span class="progress-text">${mission.current}/${mission.target}</span>
+        </div>
+      </div>
+      <div class="mission-reward">
+        <span class="reward-amount">${mission.reward}</span>
+        <span class="currency-icon">🪙</span>
+        <button class="btn-claim ${mission.claimed ? 'claimed' : ''}" 
+                ${!mission.completed || mission.claimed ? 'disabled' : ''}
+                data-mission-id="${mission.id}">
+          ${mission.claimed ? 'Riscattato' : 'Riscatta'}
+        </button>
+      </div>
+    `;
+    
+    missionsList.appendChild(missionEl);
+  });
+  
+  // Aggiungi event listeners per i pulsanti riscatta
+  document.querySelectorAll('.btn-claim:not(:disabled)').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const missionId = this.getAttribute('data-mission-id');
+      claimMissionReward(missionId);
+    });
+  });
+}
+
+// Riscatta ricompensa missione
+function claimMissionReward(missionId) {
+  const mission = missions.find(m => m.id === missionId);
+  if (mission && mission.completed && !mission.claimed) {
+    mission.claimed = true;
+    addScore(mission.reward, W/2, H/2);
+    saveMissions();
+    updateMissionsUI();
+    
+    completeMissionEffect(W/2, H/2);
+    floatText(`+${mission.reward} monete!`, W/2, H/2 - 50);
+  }
+}
+
+// Mostra overlay missioni
+function showMissionsOverlay() {
+  loadMissions();
+  updateMissionsUI();
+  
+  const missionsOverlay = document.getElementById('missionsOverlay');
+  if (missionsOverlay) {
+    missionsOverlay.style.display = 'flex';
+    setTimeout(() => missionsOverlay.classList.add('visible'), 10);
+  }
+}
+
+// Chiudi overlay missioni
+function closeMissionsOverlay() {
+  const missionsOverlay = document.getElementById('missionsOverlay');
+  if (missionsOverlay) {
+    missionsOverlay.classList.remove('visible');
+    setTimeout(() => missionsOverlay.style.display = 'none', 300);
+  }
+}
+
+// Inizializza missioni al caricamento
+loadMissions();
+
 
 // Funzione che attiva game over (personalizzala come vuoi)
 function triggerGameOver(reasonBall) {
@@ -590,26 +829,6 @@ function applyTheme(theme) {
   localStorage.setItem('ballDropTheme', theme);
 }
 
-// 🖼️ SFONDI
-function applyBackground(bg) {
-  const canvas = document.getElementById('game');
-  switch (bg) {
-    case 'scacchiera':
-      canvas.style.backgroundImage = "url('assets/background/scacchiera.png')";
-      break;
-    case 'legno':
-      canvas.style.backgroundImage = "url('assets/background/legno.png')";
-      break;
-    default: // 'erba' o valore predefinito
-      canvas.style.backgroundImage = "url('assets/background/erba.png')";
-      break;
-  }
-  canvas.style.backgroundSize = 'cover';
-  canvas.style.backgroundPosition = 'center';
-  canvas.style.backgroundRepeat = 'no-repeat';
-  localStorage.setItem('ballDropBg', bg);
-}
-
 // DICHIARA LE VARIABILI PRIMA DI UTILIZZARLE
 const savedTheme = localStorage.getItem('ballDropTheme') || 'green';
 const savedBg = localStorage.getItem('ballDropBg') || 'erba';
@@ -652,6 +871,10 @@ btnNext.addEventListener('click', () => {
   jollySelectionIndex = (jollySelectionIndex + 1) % jollySelectableTypes.length;
   updateJollyPreview();
 });
+btnMissions.addEventListener('click', function() {
+  // Nasconde il menu principale e mostra lo schermo delle missioni
+  switchScreen(screenMain, screenMissions);
+});
 
 btnSelectJolly.addEventListener('click', () => {
   const type = jollySelectableTypes[jollySelectionIndex];
@@ -671,6 +894,7 @@ btnSelectJolly.addEventListener('click', () => {
   }).catch(()=>{});
   jollySelectionIndex = 0;
 });
+
 
 // Funzione per mostrare le modalità di gioco
 function showGameModes() {
@@ -936,9 +1160,17 @@ function addScore(n, x, y) {
   scoreEl.classList.add('highlight');
   setTimeout(() => scoreEl.classList.remove('highlight'), 300);
   floatText(`+${n}`, x, y);
+  
+  // 🎯 Aggiorna missioni collezione monete
+  updateMissions('score', { score: score });
+  
   const newLevel = Math.floor(score / LEVEL_THRESHOLD) + 1;
   if (newLevel > level) {
     level = newLevel;
+    
+    // 🎯 Aggiorna missioni raggiungimento livello
+    updateMissions('level_up', { level: level });
+    
     onLevelUp();
   }
 }
@@ -998,7 +1230,6 @@ function initAudio() {
 }
 
 // 🖼️ SFONDI - DICHIARA savedBg PRIMA
-
 function applyBackground(bg) {
   const canvas = document.getElementById('game');
   switch (bg) {
@@ -1008,6 +1239,9 @@ function applyBackground(bg) {
     case 'legno':
       canvas.style.backgroundImage = "url('assets/background/legno.png')";
       break;
+    case 'natalizio':  // 👈 Aggiungi questo!
+      canvas.style.backgroundImage = "url('assets/background/natalizio.png')";  // Assicurati che il percorso sia corretto
+      break;
     default: // 'erba' o valore predefinito
       canvas.style.backgroundImage = "url('assets/background/erba.png')";
       break;
@@ -1015,13 +1249,9 @@ function applyBackground(bg) {
   canvas.style.backgroundSize = 'cover';
   canvas.style.backgroundPosition = 'center';
   canvas.style.backgroundRepeat = 'no-repeat';
-  // Salva la scelta dell'utente
   localStorage.setItem('ballDropBg', bg);
 }
 
-// Inizializza lo sfondo salvato
-document.getElementById('bgSelect').value = savedBg;
-applyBackground(savedBg);
 
 function applyTheme(theme) {
   const body = document.body;
@@ -1593,8 +1823,10 @@ function mergeBalls(A, B) {
     addScore(SCORE_STEP[idx] * scoreBonus, (A.x + B.x) / 2, (A.y + B.y) / 2);
   }
   
-  // Aggiorna missioni
-  updateMissions('merge', { type: baseType });
+  // 🎯 Aggiorna missioni - traccia fusioni di livello 2
+  if (idx === 2) { // livello 2
+    updateMissions('merge', { typeIndex: 2 });
+  }
   
   A.merging = B.merging = true;
   const totalMass = A.m + B.m;
@@ -1603,8 +1835,42 @@ function mergeBalls(A, B) {
   const vx = (A.vx * A.m + B.vx * B.m) / totalMass;
   const vy = (A.vy * A.m + B.vy * B.m) / totalMass;
   balls = balls.filter(b => b !== A && b !== B);
-  const nextIdx = Math.min(idx + 1, TYPES.length - 1);
-  const newType = TYPES[nextIdx];
+  
+  let newType;
+  
+  // 🔮 FUSIONE SPECIALE: vetro + vortice = palla casuale (anche speciale rara)
+  if ((A.type === 'vetro' && B.type === 'vortice') || (A.type === 'vortice' && B.type === 'vetro')) {
+    const random = Math.random();
+    if (random < 0.01) { // 1% - ORO (rarissimo)
+      newType = 'oro';
+      floatText('✨ ORO LEGGENDARIO!', x, y - 40);
+      sfx('powerup');
+    } else if (random < 0.05) { // 4% - Metal
+      newType = 'metal';
+      floatText('⚡ METAL RARO!', x, y - 40);
+      sfx('powerup');
+    } else if (random < 0.15) { // 10% - Altre speciali
+      const specials = ['bomba', 'vetro', 'vortice', 'detonatrice'];
+      newType = specials[Math.floor(Math.random() * specials.length)];
+      floatText('🎲 SPECIALE!', x, y - 40);
+      sfx('boing');
+    } else if (random < 0.35) { // 20% - Palle alte (basket, calcio, pallamedica)
+      const highBalls = ['basket', 'calcio', 'pallamedica'];
+      newType = highBalls[Math.floor(Math.random() * highBalls.length)];
+      floatText('🚀 SALTO!', x, y - 40);
+      sfx('merge');
+    } else { // 65% - Palla normale casuale (golf -> pallavolo)
+      const normalBalls = TYPES.slice(0, 12); // golf -> pallavolo
+      newType = normalBalls[Math.floor(Math.random() * normalBalls.length)];
+      floatText('🎯 CASUALE!', x, y - 40);
+      sfx('tink');
+    }
+  } else {
+    // Fusione normale
+    const nextIdx = Math.min(idx + 1, TYPES.length - 1);
+    newType = TYPES[nextIdx];
+  }
+  
   const C = {
     id: Math.random().toString(36).slice(2),
     type: newType,
@@ -1619,7 +1885,7 @@ function mergeBalls(A, B) {
   };
   balls.push(C);
   if (!SPECIAL_TYPES.has(newType)) {
-    highestTypeIndex = Math.max(highestTypeIndex, nextIdx);
+    highestTypeIndex = Math.max(highestTypeIndex, TYPES.indexOf(newType));
   }
   redrawNext();
   if (newType === 'vortice') {
@@ -1963,7 +2229,6 @@ class HotSeatMultiplayer {
     floatText(`Vince ${winner.name}!`, W/2, H/2);
   }
 }
-
 function showMissionsOverlay() {
   // Verifica se sono passate 24 ore dall'ultimo reset
   const lastReset = localStorage.getItem('missionsLastReset');
@@ -1978,6 +2243,35 @@ function showMissionsOverlay() {
     localStorage.setItem('missionsLastReset', now.toString());
   }
 
+  // Usa switchScreen per navigare alla schermata missioni
+  if (screenMissions) {
+    switchScreen(screenGameModes, screenMissions);
+    loadMissionsToScreen();
+  } else {
+    console.error('Schermata missioni non trovata');
+    // Fallback: mostra overlay alternativo
+    showMissionsFallbackOverlay();
+  }
+}
+
+function loadMissionsToScreen() {
+  const missionsList = document.getElementById('missionsList');
+  if (!missionsList) return;
+  
+  missionsList.innerHTML = '';
+  
+  missions.forEach(mission => {
+    const missionEl = document.createElement('div');
+    missionEl.className = `mission-item ${mission.completed ? 'completed' : ''}`;
+    missionEl.innerHTML = `
+      ${mission.text} (${mission.current}/${mission.target})
+    `;
+    missionsList.appendChild(missionEl);
+  });
+}
+
+// Fallback se la schermata missioni non esiste
+function showMissionsFallbackOverlay() {
   const existingOverlay = document.getElementById('missionsOverlay');
   if (existingOverlay) {
     existingOverlay.remove();
@@ -2024,6 +2318,19 @@ function showMissionsOverlay() {
       });
     }
   }, 0);
+}
+// MISSIONI EVENT LISTENERS
+if (btnStartMissions) {
+  btnStartMissions.addEventListener('click', () => {
+    switchScreen(screenMissions, null);
+    startGame();
+  });
+}
+
+if (btnBackMissions) {
+  btnBackMissions.addEventListener('click', () => {
+    switchScreen(screenMissions, screenGameModes);
+  });
 }
 
 function showGameModes() {
@@ -2503,16 +2810,42 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function switchScreen(fromScreen, toScreen) {
+  if (fromScreen === toScreen) return; // protezione banale
+
+  // Assicuriamoci che la schermata di destinazione sia nel flow prima di animare la precedente,
+  // così il browser non ricalcola la posizione dei bottoni facendo spostare gli elementi.
+  if (toScreen) {
+    toScreen.style.display = 'block';         // rende subito visibile nel layout
+    toScreen.setAttribute('aria-hidden', 'false');
+  }
+
   if (fromScreen) {
-    fromScreen.classList.add('exiting');
+    fromScreen.classList.add('exiting');      // avvia l'animazione di uscita
+
+    // Dopo la durata dell'animazione (corrisponde a .exiting / slideOutDown)
     setTimeout(() => {
+      // rimuovi classe attiva e animazione dalla schermata di partenza
       fromScreen.classList.remove('active', 'exiting');
-      toScreen.classList.add('active');
-    }, 400);
+      fromScreen.style.display = 'none';     // nascondi completamente dal layout
+      fromScreen.setAttribute('aria-hidden', 'true');
+
+      // attiva la schermata di destinazione (se presente)
+      if (toScreen) {
+        // rimuoviamo lo stile inline che abbiamo messo prima, lasciando a CSS la responsabilità
+        toScreen.style.display = '';
+        toScreen.classList.add('active');
+      }
+    }, 400); // usa lo stesso valore della tua animazione CSS (0.4s)
   } else {
-    toScreen.classList.add('active');
+    // nessuna schermata da chiudere: mostra direttamente la destinazione
+    if (toScreen) {
+      toScreen.style.display = '';
+      toScreen.classList.add('active');
+      toScreen.setAttribute('aria-hidden', 'false');
+    }
   }
 }
+
 
 function enhancePlayButton() {
   const playBtn = document.getElementById('btnPlay');
@@ -2661,3 +2994,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
